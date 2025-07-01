@@ -32,17 +32,19 @@ static void w_alloc_check_internal(void *pointer, const char *file,
     }
 }
 
-void *w_malloc(size_t size, const char *file, unsigned int line,
-               const char *function) {
-
-    struct w_alloc_node *node;
+static struct w_alloc_node *w_alloc_node_create(struct w_alloc_node *node,
+                                                size_t size, const char *file,
+                                                unsigned int line,
+                                                const char *function) {
     node = malloc(sizeof(*node));
     w_alloc_check_internal(node, __FILE__, __LINE__, __func__);
     node->next = NULL;
     node->prev = NULL;
 
     node->size = size;
+    dbg(node->pointer);
     node->pointer = malloc(node->size);
+    dbg(node->pointer);
     w_alloc_check_internal(node->pointer, __FILE__, __LINE__, __func__);
 
     node->file = malloc((strlen(file) + 1) * sizeof(*node->file));
@@ -56,6 +58,32 @@ void *w_malloc(size_t size, const char *file, unsigned int line,
     w_alloc_check_internal(node->function, __FILE__, __LINE__, __func__);
     memcpy(node->function, function, strlen(function));
     node->function[strlen(function)] = '\0';
+
+    node->freed = false;
+
+    return node;
+}
+
+void w_alloc_node_destroy(struct w_alloc_node *node) {
+    free(node->function);
+    node->function = NULL;
+    free(node->file);
+    node->file = NULL;
+    if (!node->freed) {
+        free(node->pointer);
+        node->pointer = NULL;
+    }
+    free(node);
+    node = NULL;
+}
+
+void *w_malloc(size_t size, const char *file, unsigned int line,
+               const char *function) {
+
+    // TODO: Check if its already been allocated
+    // TODO: Check if its already been freed
+    struct w_alloc_node *node;
+    node = w_alloc_node_create(node, size, file, line, function);
 
     if (!vm.alloc_head) {
         vm.alloc_head = node;

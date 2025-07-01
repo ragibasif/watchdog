@@ -24,6 +24,7 @@ struct w_alloc_node {
     char *file;
     unsigned int line;
     char *function;
+    bool freed;
     struct w_alloc_node *prev;
     struct w_alloc_node *next;
 };
