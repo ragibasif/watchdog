@@ -23,40 +23,37 @@ void w_create(void) {
     vm.total_frees = 0;
 }
 
+static void w_alloc_check_internal(void *pointer, const char *file,
+                                   unsigned int line, const char *function) {
+    if (!pointer) {
+        fprintf(stderr, "[%s:%u:(%s)] Memory allocation error.\n", file, line,
+                function);
+        exit(EXIT_FAILURE);
+    }
+}
+
 void *w_malloc(size_t size, const char *file, unsigned int line,
                const char *function) {
 
     struct w_alloc_node *node;
     node = malloc(sizeof(*node));
-    if (!node) {
-        fprintf(stderr, "Memory allocation error.\n");
-        exit(EXIT_FAILURE);
-    }
+    w_alloc_check_internal(node, __FILE__, __LINE__, __func__);
     node->next = NULL;
     node->prev = NULL;
 
     node->size = size;
     node->pointer = malloc(node->size);
-    if (!node->pointer) {
-        fprintf(stderr, "Memory allocation error.\n");
-        exit(EXIT_FAILURE);
-    }
+    w_alloc_check_internal(node->pointer, __FILE__, __LINE__, __func__);
 
     node->file = malloc((strlen(file) + 1) * sizeof(*node->file));
-    if (!node->file) {
-        fprintf(stderr, "Memory allocation error.\n");
-        exit(EXIT_FAILURE);
-    }
+    w_alloc_check_internal(node->file, __FILE__, __LINE__, __func__);
     memcpy(node->file, file, strlen(file));
     node->file[strlen(file)] = '\0';
 
     node->line = line;
 
     node->function = malloc((strlen(function) + 1) * sizeof(*node->function));
-    if (!node->function) {
-        fprintf(stderr, "Memory allocation error.\n");
-        exit(EXIT_FAILURE);
-    }
+    w_alloc_check_internal(node->function, __FILE__, __LINE__, __func__);
     memcpy(node->function, function, strlen(function));
     node->function[strlen(function)] = '\0';
 
@@ -84,18 +81,12 @@ void w_free(void *pointer, const char *file, unsigned int line,
     if (!vm.freed_head) {
         struct w_freed_node *node;
         node = malloc(sizeof(*node));
-        if (!node) {
-            fprintf(stderr, "Memory allocation error.\n");
-            exit(EXIT_FAILURE);
-        }
+        w_alloc_check_internal(node, __FILE__, __LINE__, __func__);
         node->next = NULL;
         node->prev = NULL;
 
         node->file = malloc((strlen(file) + 1) * sizeof(*node->file));
-        if (!node->file) {
-            fprintf(stderr, "Memory allocation error.\n");
-            exit(EXIT_FAILURE);
-        }
+        w_alloc_check_internal(node->file, __FILE__, __LINE__, __func__);
         memcpy(node->file, file, strlen(file));
         node->file[strlen(file)] = '\0';
 
@@ -103,10 +94,7 @@ void w_free(void *pointer, const char *file, unsigned int line,
 
         node->function =
             malloc((strlen(function) + 1) * sizeof(*node->function));
-        if (!node->function) {
-            fprintf(stderr, "Memory allocation error.\n");
-            exit(EXIT_FAILURE);
-        }
+        w_alloc_check_internal(node->function, __FILE__, __LINE__, __func__);
         memcpy(node->function, function, strlen(function));
         node->function[strlen(function)] = '\0';
 
@@ -141,18 +129,12 @@ void w_free(void *pointer, const char *file, unsigned int line,
 
         struct w_freed_node *node;
         node = malloc(sizeof(*node));
-        if (!node) {
-            fprintf(stderr, "Memory allocation error.\n");
-            exit(EXIT_FAILURE);
-        }
+        w_alloc_check_internal(node, __FILE__, __LINE__, __func__);
         node->next = NULL;
         node->prev = NULL;
 
         node->file = malloc((strlen(file) + 1) * sizeof(*node->file));
-        if (!node->file) {
-            fprintf(stderr, "Memory allocation error.\n");
-            exit(EXIT_FAILURE);
-        }
+        w_alloc_check_internal(node->file, __FILE__, __LINE__, __func__);
         memcpy(node->file, file, strlen(file));
         node->file[strlen(file)] = '\0';
 
@@ -160,10 +142,7 @@ void w_free(void *pointer, const char *file, unsigned int line,
 
         node->function =
             malloc((strlen(function) + 1) * sizeof(*node->function));
-        if (!node->function) {
-            fprintf(stderr, "Memory allocation error.\n");
-            exit(EXIT_FAILURE);
-        }
+        w_alloc_check_internal(node->function, __FILE__, __LINE__, __func__);
         memcpy(node->function, function, strlen(function));
         node->function[strlen(function)] = '\0';
 
@@ -181,10 +160,6 @@ void w_free(void *pointer, const char *file, unsigned int line,
         }
         tail->next = node;
         node->prev = tail;
-        dbg(tail);
-        dbg(tail->next);
-        dbg(node);
-        dbg(node->prev);
     }
 }
 void w_report(void);
