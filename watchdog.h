@@ -18,44 +18,21 @@ extern "C" {
 
 #include "common.h"
 
-struct w_location {
+struct w_alloc_node {
+    void *pointer;
+    size_t size;
     char *file;
     unsigned int line;
     char *function;
-};
-
-// DONE
-extern struct w_location *w_location_create(struct w_location *w_location,
-                                            const char *file, unsigned int line,
-                                            const char *function);
-
-// DONE
-extern void w_location_destroy(struct w_location *w_location);
-
-struct w_buffer {
-    void *pointer;
-    size_t size;
-};
-
-// DONE
-extern struct w_buffer *w_buffer_create(struct w_buffer *buffer, size_t size);
-
-// DONE
-extern void w_buffer_destroy(struct w_buffer *buffer);
-
-struct w_alloc_node {
-    struct w_buffer *buffer;
-    struct w_location *location;
     struct w_alloc_node *prev;
     struct w_alloc_node *next;
 };
 
-extern struct w_alloc_node *w_alloc_node_create(struct w_alloc_node *node);
-extern void w_alloc_node_destroy(struct w_alloc_node *node);
-
 struct w_freed_node {
-    struct w_alloc_node *allocs;
-    struct w_location *location;
+    struct w_alloc_node *alloc;
+    char *file;
+    unsigned int line;
+    char *function;
     struct w_freed_node *prev;
     struct w_freed_node *next;
 };
@@ -74,7 +51,8 @@ extern void *w_malloc(size_t size, const char *file, unsigned int line,
                       const char *function);
 extern void *w_realloc(void);
 extern void *w_calloc(void);
-extern void w_free(void);
+extern void w_free(void *pointer, const char *file, unsigned int line,
+                   const char *function);
 extern void w_report(void);
 extern void w_dump(void);
 extern void w_destroy(void);

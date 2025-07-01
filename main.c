@@ -17,7 +17,20 @@
 int main(int argc, char **argv) {
     (void)argc;
     (void)argv;
+    w_create();
     int *a = w_malloc(1024 * sizeof(*a), __FILE__, __LINE__, __func__);
+    int *b = w_malloc(1024 * sizeof(*a), __FILE__, __LINE__, __func__);
+    int *c = w_malloc(1024 * sizeof(*a), __FILE__, __LINE__, __func__);
+    int *d = w_malloc(1024 * sizeof(*a), __FILE__, __LINE__, __func__);
+    int *e = w_malloc(1024 * sizeof(*a), __FILE__, __LINE__, __func__);
+    int *f = w_malloc(1024 * sizeof(*a), __FILE__, __LINE__, __func__);
+    w_free(a, __FILE__, __LINE__, __func__);
+    w_free(b, __FILE__, __LINE__, __func__);
+    w_free(c, __FILE__, __LINE__, __func__);
+    w_free(c, __FILE__, __LINE__, __func__);
+    w_free(d, __FILE__, __LINE__, __func__);
+    w_free(e, __FILE__, __LINE__, __func__);
+    w_free(f, __FILE__, __LINE__, __func__);
 
     forge_run();
     return 0;

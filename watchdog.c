@@ -10,52 +10,12 @@
  */
 
 #include "watchdog.h"
-
-struct w_location *w_location_create(struct w_location *location,
-                                     const char *file, unsigned int line,
-                                     const char *function) {
-    location = malloc(sizeof(*location));
-    location->file = malloc((strlen(file) + 1) * sizeof(*location->file));
-    memcpy(location->file, file, strlen(file));
-    location->file[strlen(file)] = '\0';
-    location->line = line;
-    location->function =
-        malloc((strlen(function) + 1) * sizeof(*location->function));
-    memcpy(location->function, function, strlen(function));
-    location->function[strlen(function)] = '\0';
-    return location;
-}
-
-void w_location_destroy(struct w_location *location) {
-    free(location->file);
-    location->file = NULL;
-    free(location->function);
-    location->function = NULL;
-    location->line = 0;
-    free(location);
-    location = NULL;
-}
-
-struct w_buffer *w_buffer_create(struct w_buffer *buffer, size_t size) {
-    buffer = malloc(sizeof(*buffer));
-    buffer->pointer = malloc(size * sizeof(*buffer->pointer));
-    return buffer;
-}
-
-void w_buffer_destroy(struct w_buffer *buffer) {
-    free(buffer->pointer);
-    buffer->pointer = NULL;
-    buffer->size = 0;
-    free(buffer);
-    buffer = NULL;
-}
+#include "common.h"
 
 static struct watchdog vm;
 
 void w_create(void) {
     vm.alloc_head = NULL;
-    vm.alloc_head->prev = NULL;
-    vm.alloc_head->next = NULL;
     vm.freed_head = NULL;
     vm.total_bytes_alloc = 0;
     vm.total_bytes_freed = 0;
@@ -65,33 +25,168 @@ void w_create(void) {
 
 void *w_malloc(size_t size, const char *file, unsigned int line,
                const char *function) {
-    struct w_buffer *buffer;
-    buffer = w_buffer_create(buffer, size);
-    struct w_location *location;
-    location = w_location_create(location, file, line, function);
 
-    struct w_alloc_node *alloc_node;
-    alloc_node = w_alloc_node_create(alloc_node);
-    alloc_node->buffer = buffer;
-    alloc_node->location = location;
-
-    return buffer->pointer;
-}
-
-struct w_alloc_node *w_alloc_node_create(struct w_alloc_node *node) {
+    struct w_alloc_node *node;
     node = malloc(sizeof(*node));
+    if (!node) {
+        fprintf(stderr, "Memory allocation error.\n");
+        exit(EXIT_FAILURE);
+    }
     node->next = NULL;
     node->prev = NULL;
-    return node;
-}
-void w_alloc_node_destroy(struct w_alloc_node *node) {
-    free(node);
-    node = NULL;
+
+    node->size = size;
+    node->pointer = malloc(node->size);
+    if (!node->pointer) {
+        fprintf(stderr, "Memory allocation error.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    node->file = malloc((strlen(file) + 1) * sizeof(*node->file));
+    if (!node->file) {
+        fprintf(stderr, "Memory allocation error.\n");
+        exit(EXIT_FAILURE);
+    }
+    memcpy(node->file, file, strlen(file));
+    node->file[strlen(file)] = '\0';
+
+    node->line = line;
+
+    node->function = malloc((strlen(function) + 1) * sizeof(*node->function));
+    if (!node->function) {
+        fprintf(stderr, "Memory allocation error.\n");
+        exit(EXIT_FAILURE);
+    }
+    memcpy(node->function, function, strlen(function));
+    node->function[strlen(function)] = '\0';
+
+    if (!vm.alloc_head) {
+        vm.alloc_head = node;
+    } else {
+        struct w_alloc_node *temp;
+        temp = vm.alloc_head;
+        while (temp->next) {
+            temp = temp->next;
+        }
+        temp->next = node;
+        node->prev = temp;
+    }
+
+    return node->pointer;
 }
 
 void *w_realloc(void);
 void *w_calloc(void);
-void w_free(void);
+
+void w_free(void *pointer, const char *file, unsigned int line,
+            const char *function) {
+
+    if (!vm.freed_head) {
+        struct w_freed_node *node;
+        node = malloc(sizeof(*node));
+        if (!node) {
+            fprintf(stderr, "Memory allocation error.\n");
+            exit(EXIT_FAILURE);
+        }
+        node->next = NULL;
+        node->prev = NULL;
+
+        node->file = malloc((strlen(file) + 1) * sizeof(*node->file));
+        if (!node->file) {
+            fprintf(stderr, "Memory allocation error.\n");
+            exit(EXIT_FAILURE);
+        }
+        memcpy(node->file, file, strlen(file));
+        node->file[strlen(file)] = '\0';
+
+        node->line = line;
+
+        node->function =
+            malloc((strlen(function) + 1) * sizeof(*node->function));
+        if (!node->function) {
+            fprintf(stderr, "Memory allocation error.\n");
+            exit(EXIT_FAILURE);
+        }
+        memcpy(node->function, function, strlen(function));
+        node->function[strlen(function)] = '\0';
+
+        struct w_alloc_node *temp;
+        temp = vm.alloc_head;
+        while (temp) {
+            if (temp->pointer == pointer) {
+                node->alloc = temp;
+                free(node->alloc->pointer);
+                dbg(temp->pointer);
+                dbg(node->alloc->pointer);
+                dbg(pointer);
+            }
+            temp = temp->next;
+        }
+        vm.freed_head = node;
+    } else {
+        struct w_freed_node *temp;
+        struct w_freed_node *tail;
+        temp = vm.freed_head;
+        while (temp) {
+            if (temp->alloc->pointer == pointer) {
+                dbg(temp->alloc->pointer);
+                dbg(pointer);
+                dbg(EXIT_FAILURE);
+            }
+            if (!temp->next) {
+                tail = temp;
+            }
+            temp = temp->next;
+        }
+
+        struct w_freed_node *node;
+        node = malloc(sizeof(*node));
+        if (!node) {
+            fprintf(stderr, "Memory allocation error.\n");
+            exit(EXIT_FAILURE);
+        }
+        node->next = NULL;
+        node->prev = NULL;
+
+        node->file = malloc((strlen(file) + 1) * sizeof(*node->file));
+        if (!node->file) {
+            fprintf(stderr, "Memory allocation error.\n");
+            exit(EXIT_FAILURE);
+        }
+        memcpy(node->file, file, strlen(file));
+        node->file[strlen(file)] = '\0';
+
+        node->line = line;
+
+        node->function =
+            malloc((strlen(function) + 1) * sizeof(*node->function));
+        if (!node->function) {
+            fprintf(stderr, "Memory allocation error.\n");
+            exit(EXIT_FAILURE);
+        }
+        memcpy(node->function, function, strlen(function));
+        node->function[strlen(function)] = '\0';
+
+        struct w_alloc_node *temp2;
+        temp2 = vm.alloc_head;
+        while (temp2) {
+            if (temp2->pointer == pointer) {
+                node->alloc = temp2;
+                dbg(temp2->pointer);
+                dbg(node->alloc->pointer);
+                dbg(pointer);
+                free(node->alloc->pointer);
+            }
+            temp2 = temp2->next;
+        }
+        tail->next = node;
+        node->prev = tail;
+        dbg(tail);
+        dbg(tail->next);
+        dbg(node);
+        dbg(node->prev);
+    }
+}
 void w_report(void);
 void w_dump(void);
 void w_destroy(void);
