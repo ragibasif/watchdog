@@ -47,6 +47,18 @@ struct watchdog {
     size_t total_frees;
 };
 
+#ifdef WATCHDOG_ENABLE
+#define malloc(size) w_malloc(size, file, line, function)
+#define realloc(pointer, size) w_realloc(pointer, size, file, line, function)
+#define calloc(count, size) w_calloc(count, size, file, line, function)
+#define free(pointer) w_free(pointer, file, line, function)
+#else
+#undef malloc
+#undef realloc
+#undef calloc
+#undef free
+#endif // WATCHDOG_ENABLE
+
 extern void w_create(void);
 extern void *w_malloc(size_t size, const char *file, unsigned int line,
                       const char *function);
