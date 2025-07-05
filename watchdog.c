@@ -39,7 +39,6 @@ static struct w_alloc_node *w_alloc_node_create(struct w_alloc_node *node,
     node = malloc(sizeof(*node));
     w_alloc_check_internal(node, __FILE__, __LINE__, __func__);
     node->next = NULL;
-    node->prev = NULL;
 
     node->size = size;
     dbg(node->pointer);
@@ -84,24 +83,18 @@ void *w_malloc(size_t size, const char *file, unsigned int line,
     // TODO: Check if its already been freed
     struct w_alloc_node *node;
     node = w_alloc_node_create(node, size, file, line, function);
+    vm.total_allocations++;
+    vm.total_bytes_alloc += size;
 
     if (!vm.alloc_head) {
         vm.alloc_head = node;
     } else {
-        struct w_alloc_node *temp;
-        temp = vm.alloc_head;
-        while (temp->next) {
-            temp = temp->next;
-        }
-        temp->next = node;
-        node->prev = temp;
+        node->next = vm.alloc_head;
+        vm.alloc_head = node;
     }
 
     return node->pointer;
 }
-
-void *w_realloc(void);
-void *w_calloc(void);
 
 void w_free(void *pointer, const char *file, unsigned int line,
             const char *function) {
@@ -111,7 +104,6 @@ void w_free(void *pointer, const char *file, unsigned int line,
         node = malloc(sizeof(*node));
         w_alloc_check_internal(node, __FILE__, __LINE__, __func__);
         node->next = NULL;
-        node->prev = NULL;
 
         node->file = malloc((strlen(file) + 1) * sizeof(*node->file));
         w_alloc_check_internal(node->file, __FILE__, __LINE__, __func__);
@@ -159,7 +151,6 @@ void w_free(void *pointer, const char *file, unsigned int line,
         node = malloc(sizeof(*node));
         w_alloc_check_internal(node, __FILE__, __LINE__, __func__);
         node->next = NULL;
-        node->prev = NULL;
 
         node->file = malloc((strlen(file) + 1) * sizeof(*node->file));
         w_alloc_check_internal(node->file, __FILE__, __LINE__, __func__);
@@ -187,9 +178,8 @@ void w_free(void *pointer, const char *file, unsigned int line,
             temp2 = temp2->next;
         }
         tail->next = node;
-        node->prev = tail;
     }
 }
+
 void w_report(void);
 void w_dump(void);
-void w_destroy(void);

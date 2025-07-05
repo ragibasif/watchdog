@@ -25,7 +25,6 @@ struct w_alloc_node {
     unsigned int line;
     char *function;
     bool freed;
-    struct w_alloc_node *prev;
     struct w_alloc_node *next;
 };
 
@@ -34,7 +33,6 @@ struct w_freed_node {
     char *file;
     unsigned int line;
     char *function;
-    struct w_freed_node *prev;
     struct w_freed_node *next;
 };
 
@@ -62,8 +60,10 @@ struct watchdog {
 extern void w_create(void);
 extern void *w_malloc(size_t size, const char *file, unsigned int line,
                       const char *function);
-extern void *w_realloc(void);
-extern void *w_calloc(void);
+extern void *w_realloc(void *pointer, size_t size, const char *file,
+                       unsigned int line, const char *function);
+extern void *w_calloc(size_t count, size_t size, const char *file,
+                      unsigned int line, const char *function);
 extern void w_free(void *pointer, const char *file, unsigned int line,
                    const char *function);
 extern void w_report(void);
