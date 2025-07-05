@@ -41,9 +41,7 @@ static struct w_alloc_node *w_alloc_node_create(struct w_alloc_node *node,
     node->next = NULL;
 
     node->size = size;
-    dbg(node->pointer);
     node->pointer = malloc(node->size);
-    dbg(node->pointer);
     w_alloc_check_internal(node->pointer, __FILE__, __LINE__, __func__);
 
     node->file = malloc((strlen(file) + 1) * sizeof(*node->file));
@@ -124,9 +122,6 @@ void w_free(void *pointer, const char *file, unsigned int line,
             if (temp->pointer == pointer) {
                 node->alloc = temp;
                 free(node->alloc->pointer);
-                dbg(temp->pointer);
-                dbg(node->alloc->pointer);
-                dbg(pointer);
             }
             temp = temp->next;
         }
@@ -137,9 +132,7 @@ void w_free(void *pointer, const char *file, unsigned int line,
         temp = vm.freed_head;
         while (temp) {
             if (temp->alloc->pointer == pointer) {
-                dbg(temp->alloc->pointer);
-                dbg(pointer);
-                dbg(EXIT_FAILURE);
+                exit(EXIT_FAILURE);
             }
             if (!temp->next) {
                 tail = temp;
@@ -170,9 +163,6 @@ void w_free(void *pointer, const char *file, unsigned int line,
         while (temp2) {
             if (temp2->pointer == pointer) {
                 node->alloc = temp2;
-                dbg(temp2->pointer);
-                dbg(node->alloc->pointer);
-                dbg(pointer);
                 free(node->alloc->pointer);
             }
             temp2 = temp2->next;

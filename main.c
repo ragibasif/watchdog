@@ -11,7 +11,7 @@
  *
  */
 
-#include "third_party_c/internal_debug.h"
+// #include "third_party_c/internal_debug.h"
 #include "watchdog.h"
 
 int main(int argc, char **argv) {
@@ -32,6 +32,6 @@ int main(int argc, char **argv) {
     w_free(e, __FILE__, __LINE__, __func__);
     w_free(f, __FILE__, __LINE__, __func__);
 
-    forge_run();
+    // forge_run();
     return 0;
 }

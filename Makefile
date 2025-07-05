@@ -19,9 +19,9 @@ SUCCESS=$(BOLD)$(GREEN)
 INFO=$(BOLD)$(CYAN)
 
 CC := gcc
-CFLAGS := -std=c99 -Wall -Wextra -Weverything -Wvla -O1 -g3 -pedantic -v -fsanitize=address,undefined -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-common
+CFLAGS := -std=c99 -Wall -Wextra -Wvla -O1 -g3 -pedantic -v -fsanitize=address,undefined -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-common
 DBG = gdb
-LDFLAGS := -v -lc -lpthread -lm
+LDFLAGS := -v -lc #-lpthread -lm
 
 BUILD_DIRECTORY := build
 
