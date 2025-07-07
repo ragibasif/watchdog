@@ -39,15 +39,15 @@ struct watchdog {
     size_t total_frees;
 };
 
-static struct watchdog vm;
+static struct watchdog watchdog;
 
 void w_create(void) {
-    vm.alloc_head = NULL;
-    vm.freed_head = NULL;
-    vm.total_bytes_alloc = 0;
-    vm.total_bytes_freed = 0;
-    vm.total_allocations = 0;
-    vm.total_frees = 0;
+    watchdog.alloc_head = NULL;
+    watchdog.freed_head = NULL;
+    watchdog.total_bytes_alloc = 0;
+    watchdog.total_bytes_freed = 0;
+    watchdog.total_allocations = 0;
+    watchdog.total_frees = 0;
 }
 
 static void w_alloc_check_internal(void *ptr, const char *file,
@@ -108,14 +108,14 @@ void *w_malloc(const size_t size, const char *file, const unsigned int line,
     // TODO: Check if its already been freed
     struct w_alloc_node *node;
     node = w_alloc_node_create_internal(node, size, file, line, func);
-    vm.total_allocations++;
-    vm.total_bytes_alloc += size;
+    watchdog.total_allocations++;
+    watchdog.total_bytes_alloc += size;
 
-    if (!vm.alloc_head) {
-        vm.alloc_head = node;
+    if (!watchdog.alloc_head) {
+        watchdog.alloc_head = node;
     } else {
-        node->next = vm.alloc_head;
-        vm.alloc_head = node;
+        node->next = watchdog.alloc_head;
+        watchdog.alloc_head = node;
     }
 
     return node->ptr;
@@ -124,7 +124,7 @@ void *w_malloc(const size_t size, const char *file, const unsigned int line,
 void w_free(void *ptr, const char *file, const unsigned int line,
             const char *func) {
 
-    if (!vm.freed_head) {
+    if (!watchdog.freed_head) {
         struct w_freed_node *node;
         node = malloc(sizeof(*node));
         w_alloc_check_internal(node, __FILE__, __LINE__, __func__);
@@ -143,7 +143,7 @@ void w_free(void *ptr, const char *file, const unsigned int line,
         node->func[strlen(func)] = '\0';
 
         struct w_alloc_node *temp;
-        temp = vm.alloc_head;
+        temp = watchdog.alloc_head;
         while (temp) {
             if (temp->ptr == ptr) {
                 node->alloc = temp;
@@ -151,11 +151,11 @@ void w_free(void *ptr, const char *file, const unsigned int line,
             }
             temp = temp->next;
         }
-        vm.freed_head = node;
+        watchdog.freed_head = node;
     } else {
         struct w_freed_node *temp;
         struct w_freed_node *tail;
-        temp = vm.freed_head;
+        temp = watchdog.freed_head;
         while (temp) {
             if (temp->alloc->ptr == ptr) {
                 exit(EXIT_FAILURE);
@@ -184,7 +184,7 @@ void w_free(void *ptr, const char *file, const unsigned int line,
         node->func[strlen(func)] = '\0';
 
         struct w_alloc_node *temp2;
-        temp2 = vm.alloc_head;
+        temp2 = watchdog.alloc_head;
         while (temp2) {
             if (temp2->ptr == ptr) {
                 node->alloc = temp2;
