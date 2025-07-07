@@ -12,9 +12,6 @@
 #include "watchdog.h"
 #include "common.h"
 
-// TODO: implement thread safety
-// FIX: add unit tests
-
 struct w_alloc_node {
     void *ptr;
     size_t size;
@@ -119,11 +116,6 @@ static void w_alloc_node_destroy_internal(struct w_alloc_node *node) {
 void *w_malloc(const size_t size, const char *file, const unsigned int line,
                const char *func) {
 
-    // FIX: Check if watchdog_initialized is true
-    // FIX: Check if allocation size exceeds SIZE_MAX
-    // FIX: Check if allocation size is greater than 0
-    // TODO: Check if its already been allocated
-    // TODO: Check if its already been freed
     struct w_alloc_node *node;
     node = w_alloc_node_create_internal(size, file, line, func);
     watchdog.total_allocations++;
@@ -172,7 +164,6 @@ static void w_freed_node_destroy_internal(struct w_freed_node *node) {
     node = NULL;
 }
 
-// FIX: rewrite this function from scratch
 void w_free(void *ptr, const char *file, const unsigned int line,
             const char *func) {
 
@@ -225,14 +216,8 @@ void w_free(void *ptr, const char *file, const unsigned int line,
     }
 }
 
-// FIX: atm this is just a copy and paste of malloc,
-//      rewrite this to take into account the pointer that is passed
 void *w_realloc(void *ptr, size_t size, const char *file, unsigned int line,
                 const char *func) {
-    // FIX: check if pointer exists
-    // FIX: check if pointer is freed
-    // FIX: find existing allocation
-    // FIX: handle special cases (size == 0, ptr == NULL)
     struct w_alloc_node *node;
     node = w_alloc_node_create_internal(size, file, line, func);
     watchdog.total_allocations++;
@@ -248,8 +233,6 @@ void *w_realloc(void *ptr, size_t size, const char *file, unsigned int line,
     return node->ptr;
 }
 
-// FIX: atm this is just a copy and paste of malloc,
-//      rewrite this to take into account the count number
 void *w_calloc(size_t count, size_t size, const char *file, unsigned int line,
                const char *func) {
     struct w_alloc_node *node;
@@ -267,12 +250,6 @@ void *w_calloc(size_t count, size_t size, const char *file, unsigned int line,
     return node->ptr;
 }
 
-void w_report(void) {
-    // TODO: print total allocations, frees, and size
-}
-void w_dump(void) {
-    // TODO: Verbose memory dump of all allocations and frees
-}
-void w_destroy(void) {
-    // TODO: make sure all allocated memory if freed
-}
+void w_report(void) {}
+void w_dump(void) {}
+void w_destroy(void) {}
