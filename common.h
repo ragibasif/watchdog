@@ -1,7 +1,7 @@
 /*
  * File: common.h
  * Author: Ragib Asif
- * Email: ragib.asif30@myhunter.cuny.edu
+ * Email: 182296466+ragibasif@users.noreply.github.com
  * GitHub: https://github.com/ragibasif
  * LinkedIn: https://www.linkedin.com/in/ragibasif/
  * SPDX-License-Identifier: MIT
