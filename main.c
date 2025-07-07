@@ -23,12 +23,17 @@ int main(int argc, char **argv) {
     int *d = w_malloc(1024 * sizeof(*a), __FILE__, __LINE__, __func__);
     int *e = w_malloc(1024 * sizeof(*a), __FILE__, __LINE__, __func__);
     int *f = w_malloc(1024 * sizeof(*a), __FILE__, __LINE__, __func__);
-    // w_free(a, __FILE__, __LINE__, __func__);
-    // w_free(b, __FILE__, __LINE__, __func__);
-    // w_free(c, __FILE__, __LINE__, __func__);
-    // w_free(d, __FILE__, __LINE__, __func__);
-    // w_free(e, __FILE__, __LINE__, __func__);
-    // w_free(f, __FILE__, __LINE__, __func__);
+    w_free(a, __FILE__, __LINE__, __func__);
+    w_free(b, __FILE__, __LINE__, __func__);
+    w_free(c, __FILE__, __LINE__, __func__);
+    w_free(d, __FILE__, __LINE__, __func__);
+    w_free(e, __FILE__, __LINE__, __func__);
+    w_free(f, __FILE__, __LINE__, __func__);
+
+    // internal memory debugging
+    // imd_dbg_mem_create(NULL, NULL, NULL);
+    // imd_dbg_mem_dump(0);
+    // imd_dbg_mem_destroy();
 
     return 0;
 }
