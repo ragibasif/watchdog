@@ -25,10 +25,10 @@ extern "C" {
 #define calloc(count, size) w_calloc(count, size, __FILE__, __LINE__, __func__)
 #define free(ptr) w_free(ptr, __FILE__, __LINE__, __func__)
 #else
-#undef malloc
-#undef realloc
-#undef calloc
-#undef free
+// #undef malloc
+// #undef realloc
+// #undef calloc
+// #undef free
 #endif // WATCHDOG_ENABLE
 
 extern void w_create(void);
