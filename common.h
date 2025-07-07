@@ -57,9 +57,6 @@ extern "C" {
 #include <netdb.h>      // Network operations (gethostbyname(), getaddrinfo())
 #include <sys/socket.h> // Socket programming (socket(), bind(), listen())
 
-// #include "third_party_c/internal_debug.h" // internal mem debug and print
-// debug
-
 //------------------------------------------------------------------------------
 // Utility Macros
 //------------------------------------------------------------------------------

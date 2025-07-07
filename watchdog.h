@@ -17,39 +17,13 @@ extern "C" {
 #endif // __cplusplus
 
 #include "common.h"
-
-struct w_alloc_node {
-    void *pointer;
-    size_t size;
-    char *file;
-    unsigned int line;
-    char *function;
-    bool freed;
-    struct w_alloc_node *next;
-};
-
-struct w_freed_node {
-    struct w_alloc_node *alloc;
-    char *file;
-    unsigned int line;
-    char *function;
-    struct w_freed_node *next;
-};
-
-struct watchdog {
-    struct w_alloc_node *alloc_head;
-    struct w_freed_node *freed_head;
-    size_t total_bytes_alloc;
-    size_t total_bytes_freed;
-    size_t total_allocations;
-    size_t total_frees;
-};
+#include "watchdog.h"
 
 #ifdef WATCHDOG_ENABLE
-#define malloc(size) w_malloc(size, file, line, function)
-#define realloc(pointer, size) w_realloc(pointer, size, file, line, function)
-#define calloc(count, size) w_calloc(count, size, file, line, function)
-#define free(pointer) w_free(pointer, file, line, function)
+#define malloc(size) w_malloc(size, __FILE__, __LINE__, __func__)
+#define realloc(ptr, size) w_realloc(ptr, size, __FILE__, __LINE__, __func__)
+#define calloc(count, size) w_calloc(count, size, __FILE__, __LINE__, __func__)
+#define free(ptr) w_free(ptr, __FILE__, __LINE__, __func__)
 #else
 #undef malloc
 #undef realloc
@@ -59,13 +33,13 @@ struct watchdog {
 
 extern void w_create(void);
 extern void *w_malloc(size_t size, const char *file, unsigned int line,
-                      const char *function);
-extern void *w_realloc(void *pointer, size_t size, const char *file,
-                       unsigned int line, const char *function);
+                      const char *func);
+extern void *w_realloc(void *ptr, size_t size, const char *file,
+                       unsigned int line, const char *func);
 extern void *w_calloc(size_t count, size_t size, const char *file,
-                      unsigned int line, const char *function);
-extern void w_free(void *pointer, const char *file, unsigned int line,
-                   const char *function);
+                      unsigned int line, const char *func);
+extern void w_free(void *ptr, const char *file, unsigned int line,
+                   const char *func);
 extern void w_report(void);
 extern void w_dump(void);
 extern void w_destroy(void);
