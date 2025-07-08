@@ -1,4 +1,4 @@
-<h1 align="center">Watchdog</h1>
+# Watchdog
 
 <p align="center">
   <a href="https://github.com/ragibasif/watchdog">
