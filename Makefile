@@ -19,7 +19,7 @@ SUCCESS:=$(BOLD)$(GREEN)
 INFO:=$(BOLD)$(CYAN)
 
 CC := gcc
-CFLAGS := -std=c23 -Wall -Wextra -Wvla -O1 -g3 -pedantic -v -fsanitize=address,undefined -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-common
+CFLAGS := -std=c11 -Wall -Wextra -Wvla -O1 -g3 -pedantic -v -fsanitize=address,undefined -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-common
 DBG := gdb
 LDFLAGS := -v -lc #-lpthread -lm
 

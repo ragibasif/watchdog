@@ -23,6 +23,7 @@ int main(int argc, char **argv) {
     (void)argv;
 
     w_create();
+    w_report();
 
     // test_malloc();
     // test_realloc();

@@ -33,10 +33,10 @@ struct w_freed_node {
 struct watchdog {
     struct w_alloc_node *alloc_head;
     struct w_freed_node *freed_head;
-    size_t total_bytes_alloc;
-    size_t total_bytes_freed;
     size_t total_allocations;
+    size_t total_bytes_alloc;
     size_t total_frees;
+    size_t total_bytes_freed;
     bool watchdog_initialized;
 };
 
@@ -250,6 +250,13 @@ void *w_calloc(size_t count, size_t size, const char *file, unsigned int line,
     return node->ptr;
 }
 
-void w_report(void) {}
+// FIX: consistent formatting of output
+void w_report(void) {
+    printf("Watchdog Report\n");
+    printf("Allocations: %zu\n", watchdog.total_allocations);
+    printf("Allocated Bytes: %zu\n", watchdog.total_bytes_alloc);
+    printf("Frees: %zu\n", watchdog.total_frees);
+    printf("Freed Bytes: %zu\n", watchdog.total_bytes_freed);
+}
 void w_dump(void) {}
 void w_destroy(void) {}
