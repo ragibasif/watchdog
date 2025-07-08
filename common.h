@@ -17,12 +17,12 @@
 extern "C" {
 #endif // __cplusplus
 
-// #define IMD_MEM_DBG
-// #define IMD_MEM_DUMP
-// // #define IMD_EXIT_CRASH
-// #include "./thirdparty/dbg.h"
-// #include "./thirdparty/imd.h"
-//
+#define IMD_MEM_DBG
+#define IMD_MEM_DUMP
+// #define IMD_EXIT_CRASH
+#include "./thirdparty/dbg.h"
+#include "./thirdparty/imd.h"
+
 //------------------------------------------------------------------------------
 // Includes
 //------------------------------------------------------------------------------

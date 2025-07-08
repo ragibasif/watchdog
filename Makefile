@@ -7,41 +7,38 @@
 # Copyright (c) 2025 Ragib Asif
 # Version 1.0.0
 
-RESET=\033[0m
-BOLD=\033[1m
-GREEN=\033[0;92m
-RED=\033[0;91m
-MAGENTA=\033[0;95m
-CYAN=\033[0;96m
+RESET:=\033[0m
+BOLD:=\033[1m
+GREEN:=\033[0;92m
+RED:=\033[0;91m
+MAGENTA:=\033[0;95m
+CYAN:=\033[0;96m
 
-ERROR=$(BOLD)$(RED)
-SUCCESS=$(BOLD)$(GREEN)
-INFO=$(BOLD)$(CYAN)
+ERROR:=$(BOLD)$(RED)
+SUCCESS:=$(BOLD)$(GREEN)
+INFO:=$(BOLD)$(CYAN)
 
 CC := gcc
-CFLAGS := -std=c11 -Wall -Wextra -Wvla -O1 -g3 -pedantic -v -fsanitize=address,undefined -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-common
-DBG = gdb
+CFLAGS := -std=c23 -Wall -Wextra -Wvla -O1 -g3 -pedantic -v -fsanitize=address,undefined -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-common
+DBG := gdb
 LDFLAGS := -v -lc #-lpthread -lm
 
 BUILD_DIRECTORY := build
+THIRDPARTY_DIRECTORY := thirdparty
 
-EXECUTABLE := program
+EXECUTABLE := exe
 EXEC_PATH := $(BUILD_DIRECTORY)/$(EXECUTABLE)
 
-SRCS := $(wildcard *.c) $(wildcard */*.c)
-HDRS := $(wildcard *.h) $(wildcard */*.h)
-OBJS := $(patsubst %.c, $(BUILD_DIRECTORY)/%.o, $(SRCS))
+SRC := $(wildcard *.c) $(wildcard $(THIRDPARTY_DIRECTORY)/*.c)
+HDR := $(wildcard *.h) $(wildcard $(THIRDPARTY_DIRECTORY)/*.h)
+OBJ := $(patsubst %.c, $(BUILD_DIRECTORY)/%.o, $(SRC))
 
-.PHONY: all clean help run test check debug
+
+.PHONY: all clean help run check debug
 
 all: $(EXEC_PATH)
 
-check:
-	@echo "$(INFO)make check$(RESET)"
-	@which $(CC) > /dev/null && echo "$(SUCCESS)SUCCESS:$(RESET) $(CC) is installed" || echo "$(ERROR)ERROR:$(RESET) $(CC) not found, please install $(CC)"
-	@which $(DBG) > /dev/null && echo "$(SUCCESS)SUCCESS:$(RESET) $(DBG) is installed" || echo "$(ERROR)ERROR:$(RESET) $(DBG) not found, please install $(DBG)"
-
-$(EXEC_PATH): $(OBJS)
+$(EXEC_PATH): $(OBJ)
 	@echo "$(INFO)Linking$(RESET) $@ ..."
 	@mkdir -p $(@D)
 	@$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) && \
@@ -56,6 +53,12 @@ $(BUILD_DIRECTORY)/%.o: %.c
 		(echo "$(ERROR)ERROR$(RESET) Failed to compile $<" && exit 1)
 
 
+check:
+	@echo "$(INFO)make check$(RESET)"
+	@which $(CC) > /dev/null && echo "$(SUCCESS)SUCCESS:$(RESET) $(CC) is installed" || echo "$(ERROR)ERROR:$(RESET) $(CC) not found, please install $(CC)"
+	@which $(DBG) > /dev/null && echo "$(SUCCESS)SUCCESS:$(RESET) $(DBG) is installed" || echo "$(ERROR)ERROR:$(RESET) $(DBG) not found, please install $(DBG)"
+
+
 debug: $(EXEC_PATH)
 	@echo "$(INFO)make debug$(RESET)"
 	@echo "$(DBG) ./$(EXEC_PATH)"
@@ -63,8 +66,8 @@ debug: $(EXEC_PATH)
 
 clean:
 	@echo "$(INFO)make clean$(RESET)"
-	@echo "$(RM) -r $(EXEC_PATH) $(OBJS) $(BUILD_DIRECTORY) *~ *.bak *.dSYM *.out .*.un~"
-	@$(RM) -r $(EXEC_PATH) $(OBJS) $(BUILD_DIRECTORY) *~ *.bak *.dSYM *.out .*.un~
+	@echo "$(RM) -r $(EXEC_PATH) $(OBJ) $(BUILD_DIRECTORY) *~ *.bak *.dSYM *.out .*.un~"
+	@$(RM) -r $(EXEC_PATH) $(OBJ) $(BUILD_DIRECTORY) *~ *.bak *.dSYM *.out .*.un~
 
 
 run: $(EXEC_PATH)
@@ -85,3 +88,5 @@ help:
 	@echo "  $(MAGENTA)make clean$(RESET)       — remove $(INFO)$(BUILD_DIRECTORY)$(RESET) files"
 	@echo "  $(MAGENTA)make debug$(RESET)       — run $(INFO)$(EXECUTABLE)$(RESET) with $(INFO)$(DBG)$(RESET)"
 	@echo "  $(MAGENTA)make run$(RESET)         — run $(INFO)$(EXECUTABLE)$(RESET)"
+
+
