@@ -33,6 +33,57 @@ struct watchdog {
     size_t total_bytes_freed;
 };
 
+// Internals
+
+static void w_create_internal(void);
+static void w_destroy_internal(void);
+static void w_alloc_check_internal(void *ptr, const size_t size,
+                                   const char *file, const unsigned int line,
+                                   const char *func);
+static struct w_alloc_node *
+w_alloc_node_create_internal(const size_t size, const char *file,
+                             const unsigned int line, const char *func);
+static void w_alloc_node_destroy_internal(struct w_alloc_node *node);
+
+static struct watchdog *watchdog = NULL;
+
+static void w_create_internal(void) {
+    if (watchdog) {
+        return;
+    }
+    watchdog = malloc(sizeof *watchdog);
+    w_alloc_check_internal(watchdog, sizeof *watchdog, __FILE__, __LINE__,
+                           __func__);
+    watchdog->alloc_head = NULL;
+    watchdog->total_bytes_alloc = 0;
+    watchdog->total_bytes_freed = 0;
+    watchdog->total_allocations = 0;
+    watchdog->total_frees = 0;
+    atexit(w_destroy_internal);
+}
+
+static void w_destroy_internal(void) {
+    if (!watchdog) {
+        return;
+    }
+    while (watchdog->alloc_head) {
+        printf("[%s:%u(%s)] MEMORY LEAK: At memory address %p of size "
+               "%zu bytes.\n",
+               watchdog->alloc_head->file, watchdog->alloc_head->line,
+               watchdog->alloc_head->func, (void *)watchdog->alloc_head->ptr,
+               watchdog->alloc_head->size);
+        struct w_alloc_node *temp = watchdog->alloc_head->next;
+        w_alloc_node_destroy_internal(watchdog->alloc_head);
+        watchdog->alloc_head = temp;
+    }
+    watchdog->total_bytes_alloc = 0;
+    watchdog->total_bytes_freed = 0;
+    watchdog->total_allocations = 0;
+    watchdog->total_frees = 0;
+    free(watchdog);
+    watchdog = NULL;
+}
+
 static void w_alloc_check_internal(void *ptr, const size_t size,
                                    const char *file, const unsigned int line,
                                    const char *func) {
@@ -43,23 +94,6 @@ static void w_alloc_check_internal(void *ptr, const size_t size,
                 file, line, func, size, (void *)ptr);
         exit(EXIT_FAILURE);
     }
-}
-
-static struct watchdog *watchdog = NULL;
-
-void w_create(void) {
-    if (!watchdog) {
-        watchdog = malloc(sizeof *watchdog);
-        w_alloc_check_internal(watchdog, sizeof *watchdog, __FILE__, __LINE__,
-                               __func__);
-    } else {
-        return;
-    }
-    watchdog->alloc_head = NULL;
-    watchdog->total_bytes_alloc = 0;
-    watchdog->total_bytes_freed = 0;
-    watchdog->total_allocations = 0;
-    watchdog->total_frees = 0;
 }
 
 static struct w_alloc_node *
@@ -106,9 +140,11 @@ static void w_alloc_node_destroy_internal(struct w_alloc_node *node) {
     node = NULL;
 }
 
+// API
+
 void *w_malloc(const size_t size, const char *file, const unsigned int line,
                const char *func) {
-    w_create();
+    w_create_internal();
     struct w_alloc_node *node;
     node = w_alloc_node_create_internal(size, file, line, func);
     watchdog->total_allocations++;
@@ -127,7 +163,7 @@ void *w_malloc(const size_t size, const char *file, const unsigned int line,
 void *w_realloc(void *ptr, size_t size, const char *file, unsigned int line,
                 const char *func) {
 
-    w_create();
+    w_create_internal();
     struct w_alloc_node *node;
     node = w_alloc_node_create_internal(size, file, line, func);
     watchdog->total_allocations++;
@@ -146,7 +182,7 @@ void *w_realloc(void *ptr, size_t size, const char *file, unsigned int line,
 void *w_calloc(size_t count, size_t size, const char *file, unsigned int line,
                const char *func) {
 
-    w_create();
+    w_create_internal();
     struct w_alloc_node *node;
     node = w_alloc_node_create_internal(size, file, line, func);
     watchdog->total_allocations++;
@@ -162,41 +198,18 @@ void *w_calloc(size_t count, size_t size, const char *file, unsigned int line,
     return node->ptr;
 }
 
+// TODO: implement
 void w_free(void *ptr, const char *file, const unsigned int line,
             const char *func) {
-    w_create();
+    w_create_internal();
 }
 
 // FIX: consistent formatting of output
 void w_report(void) {
-    w_create();
+    w_create_internal();
     printf("Watchdog Report\n");
     printf("Allocations: %zu\n", watchdog->total_allocations);
     printf("Allocated Bytes: %zu\n", watchdog->total_bytes_alloc);
     printf("Frees: %zu\n", watchdog->total_frees);
     printf("Freed Bytes: %zu\n", watchdog->total_bytes_freed);
-}
-
-void w_dump(void) {}
-
-void w_destroy(void) {
-    if (!watchdog) {
-        return;
-    }
-    while (watchdog->alloc_head) {
-        printf("[%s:%u(%s)] MEMORY LEAK DETECTED: At memory address %p of size "
-               "%zu bytes.\n",
-               watchdog->alloc_head->file, watchdog->alloc_head->line,
-               watchdog->alloc_head->func, (void *)watchdog->alloc_head->ptr,
-               watchdog->alloc_head->size);
-        struct w_alloc_node *temp = watchdog->alloc_head->next;
-        w_alloc_node_destroy_internal(watchdog->alloc_head);
-        watchdog->alloc_head = temp;
-    }
-    watchdog->total_bytes_alloc = 0;
-    watchdog->total_bytes_freed = 0;
-    watchdog->total_allocations = 0;
-    watchdog->total_frees = 0;
-    free(watchdog);
-    watchdog = NULL;
 }

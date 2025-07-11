@@ -33,7 +33,6 @@ extern "C" {
 #endif // WATCHDOG_ENABLE
 */
 
-extern void w_create(void);
 extern void *w_malloc(size_t size, const char *file, unsigned int line,
                       const char *func);
 extern void *w_realloc(void *ptr, size_t size, const char *file,
@@ -43,8 +42,6 @@ extern void *w_calloc(size_t count, size_t size, const char *file,
 extern void w_free(void *ptr, const char *file, unsigned int line,
                    const char *func);
 extern void w_report(void);
-extern void w_dump(void);
-extern void w_destroy(void);
 
 #ifdef __cplusplus
 }
