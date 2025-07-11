@@ -12,6 +12,9 @@
 #include "watchdog.h"
 #include "common.h"
 
+// TODO: function to search by file name
+// TODO: function to search by line number
+
 struct w_alloc_node {
     void *ptr;
     size_t size;
@@ -100,24 +103,24 @@ static struct w_alloc_node *
 w_alloc_node_create_internal(const size_t size, const char *file,
                              const unsigned int line, const char *func) {
     struct w_alloc_node *node;
-    node = malloc(sizeof(*node));
-    w_alloc_check_internal(node, sizeof(*node), __FILE__, __LINE__, __func__);
+    node = malloc(sizeof *node);
+    w_alloc_check_internal(node, sizeof *node, __FILE__, __LINE__, __func__);
     node->next = NULL;
 
     node->size = size;
     node->ptr = malloc(node->size);
     w_alloc_check_internal(node->ptr, node->size, __FILE__, __LINE__, __func__);
 
-    node->file = malloc((strlen(file) + 1) * sizeof(*node->file));
-    w_alloc_check_internal(node->file, (strlen(file) + 1) * sizeof(*node->file),
+    node->file = malloc((strlen(file) + 1) * sizeof *node->file);
+    w_alloc_check_internal(node->file, (strlen(file) + 1) * sizeof *node->file,
                            __FILE__, __LINE__, __func__);
     memcpy(node->file, file, strlen(file));
     node->file[strlen(file)] = '\0';
 
     node->line = line;
 
-    node->func = malloc((strlen(func) + 1) * sizeof(*node->func));
-    w_alloc_check_internal(node->func, (strlen(func) + 1) * sizeof(*node->func),
+    node->func = malloc((strlen(func) + 1) * sizeof *node->func);
+    w_alloc_check_internal(node->func, (strlen(func) + 1) * sizeof *node->func,
                            __FILE__, __LINE__, __func__);
     memcpy(node->func, func, strlen(func));
     node->func[strlen(func)] = '\0';

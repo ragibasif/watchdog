@@ -25,6 +25,9 @@ int main(int argc, char **argv) {
     int *f1 = w_malloc(20 * sizeof(int), __FILE__, __LINE__, __func__);
     int *f2 = w_malloc(20 * sizeof(int), __FILE__, __LINE__, __func__);
     int *f3 = w_malloc(20 * sizeof(int), __FILE__, __LINE__, __func__);
+    f3 = w_malloc(20 * sizeof(int), __FILE__, __LINE__, __func__);
+    f3 = w_malloc(20 * sizeof(int), __FILE__, __LINE__, __func__);
+    f3 = w_malloc(20 * sizeof(int), __FILE__, __LINE__, __func__);
     w_report();
 
     // test_malloc();
