@@ -176,5 +176,27 @@ void w_report(void) {
     printf("Frees: %zu\n", watchdog->total_frees);
     printf("Freed Bytes: %zu\n", watchdog->total_bytes_freed);
 }
+
 void w_dump(void) {}
-void w_destroy(void) {}
+
+void w_destroy(void) {
+    if (!watchdog) {
+        return;
+    }
+    while (watchdog->alloc_head) {
+        printf("[%s:%u(%s)] MEMORY LEAK DETECTED: At memory address %p of size "
+               "%zu bytes.\n",
+               watchdog->alloc_head->file, watchdog->alloc_head->line,
+               watchdog->alloc_head->func, (void *)watchdog->alloc_head->ptr,
+               watchdog->alloc_head->size);
+        struct w_alloc_node *temp = watchdog->alloc_head->next;
+        w_alloc_node_destroy_internal(watchdog->alloc_head);
+        watchdog->alloc_head = temp;
+    }
+    watchdog->total_bytes_alloc = 0;
+    watchdog->total_bytes_freed = 0;
+    watchdog->total_allocations = 0;
+    watchdog->total_frees = 0;
+    free(watchdog);
+    watchdog = NULL;
+}
