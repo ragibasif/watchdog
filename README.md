@@ -28,6 +28,7 @@
 </p>
 
 Watchdog is a minimal C library for tracking memory allocations, memory
-reallocations, and memory frees to detect memory leaks.
+reallocations, and memory frees to detect memory leaks. The library is written
+in `C23`.
 
 Disclaimer: **For educational and recreational purposes only.**

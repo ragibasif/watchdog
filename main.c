@@ -1,7 +1,6 @@
 /*
  * File: main.c
  * Author: Ragib Asif
- * Email: 182296466+ragibasif@users.noreply.github.com
  * GitHub: https://github.com/ragibasif
  * LinkedIn: https://www.linkedin.com/in/ragibasif/
  * SPDX-License-Identifier: MIT
@@ -18,9 +17,12 @@ static void test_realloc(void);
 static void test_calloc(void);
 static void test_free(void);
 
-int main(int argc, char **argv) {
-    (void)argc;
-    (void)argv;
+int main(int argc, [[maybe_unused]] char **argv) {
+
+    if (argc > 1) {
+        fprintf(stderr, "Error: Too many arguments.\n");
+        return EXIT_FAILURE;
+    }
 
     int *f1 = w_malloc(20 * sizeof(int), __FILE__, __LINE__, __func__);
     int *f2 = w_malloc(20 * sizeof(int), __FILE__, __LINE__, __func__);
@@ -28,19 +30,19 @@ int main(int argc, char **argv) {
     f3 = w_malloc(20 * sizeof(int), __FILE__, __LINE__, __func__);
     f3 = w_malloc(20 * sizeof(int), __FILE__, __LINE__, __func__);
     f3 = w_malloc(20 * sizeof(int), __FILE__, __LINE__, __func__);
-    w_report();
+    f3 = w_malloc(SIZE_MAX, __FILE__, __LINE__, __func__);
 
     // test_malloc();
     // test_realloc();
     // test_calloc();
     // test_free();
 
-    // internal memory debugging
+    // // internal memory debugging
     // imd_dbg_mem_create(NULL, NULL, NULL);
     // imd_dbg_mem_dump(0);
     // imd_dbg_mem_destroy();
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 // Summary of Malloc Test Cases:

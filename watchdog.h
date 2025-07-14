@@ -1,7 +1,6 @@
 /*
  * File: watchdog.h
  * Author: Ragib Asif
- * Email: 182296466+ragibasif@users.noreply.github.com
  * GitHub: https://github.com/ragibasif
  * LinkedIn: https://www.linkedin.com/in/ragibasif/
  * SPDX-License-Identifier: MIT
@@ -33,15 +32,14 @@ extern "C" {
 #endif // WATCHDOG_ENABLE
 */
 
-extern void *w_malloc(size_t size, const char *file, unsigned int line,
+extern void *w_malloc(size_t size, const char *file, const int line,
                       const char *func);
-extern void *w_realloc(void *ptr, size_t size, const char *file,
-                       unsigned int line, const char *func);
+extern void *w_realloc(void *ptr, size_t size, const char *file, const int line,
+                       const char *func);
 extern void *w_calloc(size_t count, size_t size, const char *file,
-                      unsigned int line, const char *func);
-extern void w_free(void *ptr, const char *file, unsigned int line,
+                      const int line, const char *func);
+extern void w_free(void *ptr, const char *file, const int line,
                    const char *func);
-extern void w_report(void);
 
 #ifdef __cplusplus
 }

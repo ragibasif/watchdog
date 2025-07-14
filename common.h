@@ -1,7 +1,6 @@
 /*
  * File: common.h
  * Author: Ragib Asif
- * Email: 182296466+ragibasif@users.noreply.github.com
  * GitHub: https://github.com/ragibasif
  * LinkedIn: https://www.linkedin.com/in/ragibasif/
  * SPDX-License-Identifier: MIT
@@ -17,12 +16,12 @@
 extern "C" {
 #endif // __cplusplus
 
-// #define IMD_MEM_DBG
-// #define IMD_MEM_DUMP
-// // #define IMD_EXIT_CRASH
-// #include "./thirdparty/dbg.h"
-// #include "./thirdparty/imd.h"
-//
+#define IMD_MEM_DBG
+#define IMD_MEM_DUMP
+// #define IMD_EXIT_CRASH
+#include "./thirdparty/dbg.h"
+#include "./thirdparty/imd.h"
+
 //------------------------------------------------------------------------------
 // Includes
 //------------------------------------------------------------------------------
