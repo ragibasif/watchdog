@@ -32,6 +32,7 @@ extern "C" {
 #endif // WATCHDOG_ENABLE
 */
 
+extern void w_init(const char *file);
 extern void *w_malloc(size_t size, const char *file, const int line,
                       const char *func);
 extern void *w_realloc(void *ptr, size_t size, const char *file, const int line,
