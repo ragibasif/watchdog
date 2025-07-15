@@ -1,6 +1,14 @@
-# Watchdog
+<div align="center">
+<h1>
+ Watchdog
+</h1>
+<a href="https://github.com/ragibasif/watchdog">
+    <img width=200px height=200px alt="Watchdog Logo" src="./docs/watchdog-logo.png">
+  </a>
+</div>
 
-<p align="center">
+<div align="center">
+<p>
   <a href="https://github.com/ragibasif/watchdog">
     <img alt="GitHub" src="https://img.shields.io/badge/GitHub-0D1117?style=for-the-badge&logo=github&logoColor=C9D1D9">
   </a>
@@ -26,9 +34,13 @@
     <img alt="License" src="https://img.shields.io/github/license/ragibasif/watchdog?style=for-the-badge&logo=starship&color=8957E5&logoColor=C9D1D9&labelColor=0D1117">
   </a>
 </p>
+</div>
 
-Watchdog is a minimal C library for tracking memory allocations, memory
-reallocations, and memory frees to detect memory leaks. The library is written
-in `C23`.
+Watchdog is a minimal dynamic memory debugger for tracking memory allocations, memory
+reallocations, and memory frees to detect memory leaks.
 
 Disclaimer: **For educational and recreational purposes only.**
+
+- [https://www.scottmcpeak.com/memory-errors/](https://www.scottmcpeak.com/memory-errors/)
+- [https://toxigon.com/debugging-memory-leaks-in-c](https://toxigon.com/debugging-memory-leaks-in-c)
+- [https://peerdh.com/blogs/programming-insights/creating-a-custom-debugger-for-scripting-languages-in-c](https://peerdh.com/blogs/programming-insights/creating-a-custom-debugger-for-scripting-languages-in-c)
