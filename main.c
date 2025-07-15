@@ -24,20 +24,24 @@ int main(int argc, [[maybe_unused]] char **argv) {
         return EXIT_FAILURE;
     }
 
-    int *f1 = w_malloc(20 * sizeof(int), __FILE__, __LINE__, __func__);
-    int *f2 = w_malloc(20 * sizeof(int), __FILE__, __LINE__, __func__);
-    int *f3 = w_malloc(20 * sizeof(int), __FILE__, __LINE__, __func__);
-    f3 = w_malloc(20 * sizeof(int), __FILE__, __LINE__, __func__);
-    f3 = w_malloc(20 * sizeof(int), __FILE__, __LINE__, __func__);
-    f3 = w_malloc(20 * sizeof(int), __FILE__, __LINE__, __func__);
-    f3 = w_malloc(SIZE_MAX, __FILE__, __LINE__, __func__);
+    w_init(NULL);
+
+    int *f1 = w_malloc(1 * sizeof(int), __FILE__, __LINE__, __func__);
+    int *f2 = w_malloc(2 * sizeof(int), __FILE__, __LINE__, __func__);
+    w_free(f1, __FILE__, __LINE__, __func__);
+    w_free(f1, __FILE__, __LINE__, __func__);
+    int *f3 = w_malloc(3 * sizeof(int), __FILE__, __LINE__, __func__);
+    f3 = w_malloc(4 * sizeof(int), __FILE__, __LINE__, __func__);
+    f3 = w_malloc(5 * sizeof(int), __FILE__, __LINE__, __func__);
+    f3 = w_malloc(6 * sizeof(int), __FILE__, __LINE__, __func__);
+    w_free(f2, __FILE__, __LINE__, __func__);
+    // f3 = w_malloc(SIZE_MAX, __FILE__, __LINE__, __func__);
 
     // test_malloc();
     // test_realloc();
     // test_calloc();
     // test_free();
 
-    // // internal memory debugging
     // imd_dbg_mem_create(NULL, NULL, NULL);
     // imd_dbg_mem_dump(0);
     // imd_dbg_mem_destroy();

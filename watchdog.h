@@ -16,7 +16,6 @@ extern "C" {
 #endif // __cplusplus
 
 #include "common.h"
-#include "watchdog.h"
 
 /* -- DO NOT UNCOMMENT WHILE STILL IN DEVELOPMENT --
 #ifdef WATCHDOG_ENABLE
@@ -35,12 +34,13 @@ extern "C" {
 extern void w_init(const char *file);
 extern void *w_malloc(size_t size, const char *file, const int line,
                       const char *func);
-extern void *w_realloc(void *ptr, size_t size, const char *file, const int line,
-                       const char *func);
+extern void *w_realloc(void *old_ptr, size_t size, const char *file,
+                       const int line, const char *func);
 extern void *w_calloc(size_t count, size_t size, const char *file,
                       const int line, const char *func);
 extern void w_free(void *ptr, const char *file, const int line,
                    const char *func);
+extern void w_report(void);
 
 #ifdef __cplusplus
 }
