@@ -40,7 +40,3 @@ Watchdog is a minimal dynamic memory debugger for tracking memory allocations, m
 reallocations, and memory frees to detect memory leaks.
 
 Disclaimer: **For educational and recreational purposes only.**
-
-- [https://www.scottmcpeak.com/memory-errors/](https://www.scottmcpeak.com/memory-errors/)
-- [https://toxigon.com/debugging-memory-leaks-in-c](https://toxigon.com/debugging-memory-leaks-in-c)
-- [https://peerdh.com/blogs/programming-insights/creating-a-custom-debugger-for-scripting-languages-in-c](https://peerdh.com/blogs/programming-insights/creating-a-custom-debugger-for-scripting-languages-in-c)
