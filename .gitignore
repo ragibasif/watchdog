@@ -169,3 +169,5 @@ fabric.properties
 .idea/**/azureSettings.xml
 
 thirdparty
+resource
+temp.md
