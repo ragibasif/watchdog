@@ -18,14 +18,14 @@ SUCCESS:=$(BOLD)$(GREEN)
 INFO:=$(BOLD)$(CYAN)
 
 CC := gcc
-CFLAGS := -std=c2x -Wall -Wextra -Wvla -O1 -g3 -pedantic -v -fsanitize=address,undefined -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-common
+CFLAGS := -std=c2x #-Wall -Wextra -Wvla -O1 -g3 -pedantic -v -fsanitize=address,undefined -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-common
 DBG := gdb
 LDFLAGS := -v -lc -lpthread
 
 BUILD_DIRECTORY := build
 THIRDPARTY_DIRECTORY := thirdparty
 
-EXECUTABLE := exe
+EXECUTABLE := watchdog
 EXEC_PATH := $(BUILD_DIRECTORY)/$(EXECUTABLE)
 
 SRC := $(wildcard *.c) $(wildcard $(THIRDPARTY_DIRECTORY)/*.c)

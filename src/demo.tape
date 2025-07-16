@@ -65,21 +65,19 @@
 #   Hide                            Hide the subsequent commands from the output
 #   Show                            Show the subsequent commands in the output
 
-Output demo.gif
-Output demo.mp4
-Output demo.webm
+Output demo_0.gif
 
 Require echo
 
 Set Shell "zsh"
-Set FontSize 32
+Set FontSize 20
 Set FontFamily "Fira Code"
 Set Theme "GitHub Dark"
 Set Width 1200
-Set Height 600
+Set Height 300
 Set BorderRadius 10
 Set TypingSpeed 25ms
 
-Type "echo Welcome!" Sleep 500ms Enter
+Type "./build/watchdog" Sleep 500ms Enter
 
-Sleep 1s
+Sleep 5s
