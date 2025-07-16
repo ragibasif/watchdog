@@ -41,31 +41,60 @@ vulnerabilities such as leaks, out of bounds errors, and double free errors.
 
 ![./docs/demo_0.gif](./docs/demo_0.gif)
 
-## Malloc
+## Usage
+
+### Installation
+
+Include `watchdog.h` and `watchdog.c` in your project.
+
+![./docs/project_dir.svg](./docs/project_dir.svg)
+
+Then `#include watchdog.h` in a source/header file. It will be turned on by default.
+
+![./docs/include_file.svg](./docs/include_file.svg)
+
+### Defaults
+
+Verbose logging is on by default, log to file is off by default, and color
+output is off by default.
+
+![./docs/defaults.svg](./docs/defaults.svg)
+
+To customize the defaults, pass appropriate boolean to `w_init`.
+
+![./docs/change_defaults.svg](./docs/change_defaults.svg)
+
+Enabling `log_to_file` will direct log output to a log file named `watchdog.log`.
+Color output is turned off if `log_to_file` is enabled regardless of the
+`enable_color_output` variable value.
+
+If `enable_verbose_log` is set to false, only errors will be logged.
+
+### Malloc
 
 ![./docs/malloc.svg](./docs/malloc.svg)
 
 ![./docs/malloc.gif](./docs/malloc.gif)
 
-## Realloc
+### Realloc
 
 ![./docs/realloc.svg](./docs/realloc.svg)
 
 ![./docs/realloc.gif](./docs/realloc.gif)
 
-## Calloc
+### Calloc
 
 ![./docs/calloc.svg](./docs/calloc.svg)
 
 ![./docs/calloc.gif](./docs/calloc.gif)
 
-## Free
+### Free
 
 ![./docs/free.svg](./docs/free.svg)
 
 ![./docs/free.gif](./docs/free.gif)
 
-## Out of Bounds Checking
+### Out of Bounds Checking
 
 ![./docs/out-of-bounds.svg](./docs/out-of-bounds.svg)
 

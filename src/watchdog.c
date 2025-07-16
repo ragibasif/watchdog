@@ -204,12 +204,16 @@ void *w_realloc(void *old_ptr, size_t size, const char *file, const int line,
 
     if (!old_ptr) {
         pthread_mutex_unlock(&w_mutex);
-        return w_malloc(size, file, line, func);
+        void *temp = w_malloc(size, file, line, func);
+        return temp;
     }
 
-    void *free_check_ptr = old_ptr - CANARY_SIZE;
+    size_t old_ptr_size;
+
+    void *original_ptr = old_ptr - CANARY_SIZE;
     for (size_t i = 0; i < watchdog.size; i++) {
-        if (watchdog.buffer[i]->ptr == free_check_ptr) {
+        if (watchdog.buffer[i]->ptr == original_ptr) {
+            old_ptr_size = watchdog.buffer[i]->size;
             if (watchdog.buffer[i]->freed) {
                 WATCHDOG_LOG_ERROR("Attempt to reallocate a freed pointer.",
                                    file, line, func);
@@ -223,6 +227,7 @@ void *w_realloc(void *old_ptr, size_t size, const char *file, const int line,
 
     if (!w_alloc_max_size_check_internal(size, file, line, func)) {
         pthread_mutex_unlock(&w_mutex);
+        w_free(old_ptr, file, line, func);
         return NULL;
     }
     if (!size) {
@@ -233,10 +238,14 @@ void *w_realloc(void *old_ptr, size_t size, const char *file, const int line,
 
     void *new_ptr = malloc(size + (2 * CANARY_SIZE));
     w_alloc_check_internal(new_ptr, size, __FILE__, __LINE__, __func__);
-    for (size_t i = 0; i < size + (2 * CANARY_SIZE); i++) {
-        ((BYTE *)new_ptr)[i] = CANARY_VALUE;
+    memset(new_ptr, CANARY_VALUE, size + (2 * CANARY_SIZE));
+    size_t move_size;
+    if (old_ptr_size > size) {
+        move_size = size;
+    } else {
+        move_size = old_ptr_size;
     }
-    memcpy(new_ptr + CANARY_SIZE, old_ptr, size);
+    memcpy(new_ptr + CANARY_SIZE, old_ptr, move_size);
     WAM_realloc_update_internal(old_ptr, new_ptr, size, file, line, func);
     if (!new_ptr) {
         pthread_mutex_unlock(&w_mutex);
@@ -401,13 +410,10 @@ static void WAM_realloc_update_internal(void *old_ptr, void *new_ptr,
     for (size_t i = 0; i < watchdog.size; i++) {
         if (watchdog.buffer[i]->ptr == original_ptr) {
             if (!watchdog.buffer[i]->freed) {
-                free(original_ptr);
-                original_ptr = NULL;
-                watchdog.buffer[i]->ptr = new_ptr;
-                watchdog.buffer[i]->size = new_size;
-                watchdog.buffer[i]->file = file;
-                watchdog.buffer[i]->line = line;
-                watchdog.buffer[i]->func = func;
+                pthread_mutex_unlock(&w_mutex);
+                w_free(old_ptr, watchdog.buffer[i]->file,
+                       watchdog.buffer[i]->line, watchdog.buffer[i]->func);
+                WAM_malloc_create_internal(new_ptr, new_size, file, line, func);
 
                 return;
             }
