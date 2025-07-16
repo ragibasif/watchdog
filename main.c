@@ -24,31 +24,32 @@ int main(int argc, [[maybe_unused]] char **argv) {
         return EXIT_FAILURE;
     }
 
-    w_init(NULL);
+    bool log_to_file = true;
+    bool enable_color_output = true;
 
-    int *f1 = w_malloc(1 * sizeof(int), __FILE__, __LINE__, __func__);
-    f1[1] = 34;
-    w_free(f1, __FILE__, __LINE__, __func__);
+    w_init(log_to_file, enable_color_output);
 
-    int *f2 = w_malloc(2 * sizeof(int), __FILE__, __LINE__, __func__);
-    w_free(f1, __FILE__, __LINE__, __func__);
-    int *f3 = w_malloc(3 * sizeof(int), __FILE__, __LINE__, __func__);
-    w_free(f3, __FILE__, __LINE__, __func__);
-    f3 = w_malloc(4 * sizeof(int), __FILE__, __LINE__, __func__);
-    f3 = w_malloc(5 * sizeof(int), __FILE__, __LINE__, __func__);
-    f3 = w_malloc(6 * sizeof(int), __FILE__, __LINE__, __func__);
-    w_free(f2, __FILE__, __LINE__, __func__);
+    // int *f1 = w_malloc(1 * sizeof(int), __FILE__, __LINE__, __func__);
+    // f1[1] = 34;
+    // w_free(f1, __FILE__, __LINE__, __func__);
+    //
+    // int *f2 = w_malloc(2 * sizeof(int), __FILE__, __LINE__, __func__);
+    // w_free(f1, __FILE__, __LINE__, __func__);
+    // int *f3 = w_malloc(3 * sizeof(int), __FILE__, __LINE__, __func__);
+    // w_free(f3, __FILE__, __LINE__, __func__);
+    // f3 = w_malloc(4 * sizeof(int), __FILE__, __LINE__, __func__);
+    // f3 = w_malloc(5 * sizeof(int), __FILE__, __LINE__, __func__);
+    // f3 = w_malloc(6 * sizeof(int), __FILE__, __LINE__, __func__);
+    // w_free(f2, __FILE__, __LINE__, __func__);
     // f3 = w_malloc(SIZE_MAX, __FILE__, __LINE__, __func__);
 
-    int b;
-    w_free(&b, __FILE__, __LINE__, __func__);
-    // test_malloc();
-    // test_realloc();
-    // test_calloc();
-    // test_free();
+    test_malloc();
+    test_realloc();
+    test_calloc();
+    test_free();
 
-    // imd_dbg_mem_create(NULL, NULL, NULL);
-    // imd_dbg_mem_dump(0);
+    imd_dbg_mem_create(NULL, NULL, NULL);
+    imd_dbg_mem_dump(0);
     // imd_dbg_mem_destroy();
 
     return EXIT_SUCCESS;
