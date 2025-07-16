@@ -38,4 +38,6 @@ reallocations, and memory frees to detect memory leaks.
 
 ![demo_0.svg](./docs/demo_0.svg)
 
+![demo_0.gif](./docs/demo_0.gif)
+
 Disclaimer: **For educational and recreational purposes only.**
