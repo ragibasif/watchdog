@@ -8,6 +8,7 @@
  * Version 1.0.0
  */
 
+#define WATCHDOG_DISABLE
 #include "watchdog.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -17,6 +18,8 @@
 static const char *log_file_name = "watchdog.log";
 static pthread_mutex_t w_mutex = PTHREAD_MUTEX_INITIALIZER;
 static FILE *w_log_file = NULL;
+static bool verbose_log = true;
+static bool log_to_file = false;
 static bool color_output = false;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,22 +28,41 @@ static bool color_output = false;
 // Watchdog Internals Declarations
 ////////////////////////////////////////////////////////////////////////////////
 
+typedef unsigned char BYTE;
+
 #define WATCHDOG_LOG(prefix, ptr, size, file, line, func)                      \
     do {                                                                       \
         time_t now = time(NULL);                                               \
         char *time_str = ctime(&now);                                          \
         time_str[strlen(time_str) - 1] = '\0';                                 \
-        fprintf(w_log_file, "[%s] %s [%s:%d (%s)]: %p = %zu Bytes\n", prefix,  \
-                time_str, file, line, func, ptr, size);                        \
+        if (color_output && w_log_file == stdout) {                            \
+            fprintf(                                                           \
+                w_log_file,                                                    \
+                "%s%s[%s]%s %s%s [%s:%d (%s)]:%s %s%s%p%s = %s%zu%s Bytes\n",  \
+                AEC_BOLD, AEC_MAGENTA, prefix, AEC_RESET, AEC_DIM, time_str,   \
+                file, line, func, AEC_RESET, AEC_CYAN, AEC_BOLD, ptr,          \
+                AEC_RESET, AEC_BOLD, size, AEC_RESET);                         \
+        } else {                                                               \
+            fprintf(w_log_file, "[%s] %s [%s:%d (%s)]: %p = %zu Bytes\n",      \
+                    prefix, time_str, file, line, func, ptr, size);            \
+        }                                                                      \
+        fflush(w_log_file);                                                    \
     } while (0)
 
-#define WATCHDOG_LOG_ERROR(prefix, ptr, msg, file, line, func)                 \
+#define WATCHDOG_LOG_ERROR(msg, file, line, func)                              \
     do {                                                                       \
         time_t now = time(NULL);                                               \
         char *time_str = ctime(&now);                                          \
         time_str[strlen(time_str) - 1] = '\0';                                 \
-        fprintf(w_log_file, "[%s] %s [%s:%d (%s)]: %p = %s\n", prefix,         \
-                time_str, file, line, func, ptr, msg);                         \
+        if (color_output && w_log_file == stdout) {                            \
+            fprintf(w_log_file, "%s%s[ERROR]%s %s%s [%s:%d (%s)]:%s %s%s%s\n", \
+                    AEC_BOLD, AEC_RED, AEC_RESET, AEC_DIM, time_str, file,     \
+                    line, func, AEC_RESET, AEC_BOLD, msg, AEC_RESET);          \
+        } else {                                                               \
+            fprintf(w_log_file, "[ERROR] %s [%s:%d (%s)]: %s\n", time_str,     \
+                    file, line, func, msg);                                    \
+        }                                                                      \
+        fflush(w_log_file);                                                    \
     } while (0)
 
 #define CANARY_SIZE 64
@@ -106,8 +128,11 @@ static void WDA_expand_capacity_internal(void);
 
 static WDA watchdog;
 
-void w_init(bool log_to_file, bool enable_color_output) {
+void w_init(bool enable_verbose_log, bool enable_file_log,
+            bool enable_color_output) {
     pthread_mutex_lock(&w_mutex);
+    verbose_log = enable_verbose_log;
+    log_to_file = enable_file_log;
     color_output = enable_color_output;
     if (log_to_file) {
         w_log_file = fopen(log_file_name, "a");
@@ -160,9 +185,11 @@ void *w_malloc(const size_t size, const char *file, const int line,
 
     WAM_malloc_create_internal(ptr, size, file, line, func);
     memset(ptr, CANARY_VALUE, CANARY_SIZE);
-    memset((char *)ptr + size + CANARY_SIZE, CANARY_VALUE, CANARY_SIZE);
+    memset((BYTE *)ptr + size + CANARY_SIZE, CANARY_VALUE, CANARY_SIZE);
 
-    WATCHDOG_LOG("MALLOC", ptr, size, file, line, func);
+    if (verbose_log) {
+        WATCHDOG_LOG("MALLOC", ptr, size, file, line, func);
+    }
     pthread_mutex_unlock(&w_mutex);
 
     return ptr + CANARY_SIZE;
@@ -184,8 +211,7 @@ void *w_realloc(void *old_ptr, size_t size, const char *file, const int line,
     for (size_t i = 0; i < watchdog.size; i++) {
         if (watchdog.buffer[i]->ptr == free_check_ptr) {
             if (watchdog.buffer[i]->freed) {
-                WATCHDOG_LOG_ERROR("ERROR", free_check_ptr,
-                                   "Attempt to reallocate a freed pointer.",
+                WATCHDOG_LOG_ERROR("Attempt to reallocate a freed pointer.",
                                    file, line, func);
                 pthread_mutex_unlock(&w_mutex);
                 return NULL;
@@ -208,7 +234,7 @@ void *w_realloc(void *old_ptr, size_t size, const char *file, const int line,
     void *new_ptr = malloc(size + (2 * CANARY_SIZE));
     w_alloc_check_internal(new_ptr, size, __FILE__, __LINE__, __func__);
     for (size_t i = 0; i < size + (2 * CANARY_SIZE); i++) {
-        ((unsigned char *)new_ptr)[i] = CANARY_VALUE;
+        ((BYTE *)new_ptr)[i] = CANARY_VALUE;
     }
     memcpy(new_ptr + CANARY_SIZE, old_ptr, size);
     WAM_realloc_update_internal(old_ptr, new_ptr, size, file, line, func);
@@ -218,7 +244,9 @@ void *w_realloc(void *old_ptr, size_t size, const char *file, const int line,
     }
     old_ptr = NULL;
 
-    WATCHDOG_LOG("REALLOC", new_ptr, size, file, line, func);
+    if (verbose_log) {
+        WATCHDOG_LOG("REALLOC", new_ptr, size, file, line, func);
+    }
     pthread_mutex_unlock(&w_mutex);
 
     return new_ptr + CANARY_SIZE;
@@ -246,8 +274,7 @@ void *w_calloc(size_t count, size_t size, const char *file, const int line,
     }
 
     if (!(count * size)) {
-        WATCHDOG_LOG_ERROR("ERROR", NULL, "Calloc parameter overflow.", file,
-                           line, func);
+        WATCHDOG_LOG_ERROR("Calloc parameter overflow.", file, line, func);
         pthread_mutex_unlock(&w_mutex);
         return NULL;
     }
@@ -256,12 +283,14 @@ void *w_calloc(size_t count, size_t size, const char *file, const int line,
     w_alloc_check_internal(ptr, size, __FILE__, __LINE__, __func__);
     WAM_malloc_create_internal(ptr, size, file, line, func);
     memset(ptr, CANARY_VALUE, CANARY_SIZE);
-    memset((char *)ptr + size + CANARY_SIZE, CANARY_VALUE, CANARY_SIZE);
+    memset((BYTE *)ptr + size + CANARY_SIZE, CANARY_VALUE, CANARY_SIZE);
     for (size_t i = CANARY_SIZE; i < count; i++) {
         ((char *)ptr)[i] = 0;
     }
 
-    WATCHDOG_LOG("CALLOC", ptr, size, file, line, func);
+    if (verbose_log) {
+        WATCHDOG_LOG("CALLOC", ptr, size, file, line, func);
+    }
 
     pthread_mutex_unlock(&w_mutex);
 
@@ -271,8 +300,7 @@ void *w_calloc(size_t count, size_t size, const char *file, const int line,
 void w_free(void *ptr, const char *file, const int line, const char *func) {
     pthread_mutex_lock(&w_mutex);
     if (!ptr) {
-        WATCHDOG_LOG_ERROR("ERROR", ptr,
-                           "Attempt to free unallocated/untracked memory.",
+        WATCHDOG_LOG_ERROR("Attempt to free unallocated/untracked memory.",
                            file, line, func);
         pthread_mutex_unlock(&w_mutex);
         return;
@@ -282,12 +310,11 @@ void w_free(void *ptr, const char *file, const int line, const char *func) {
         if (watchdog.buffer[i]->ptr == original_ptr) {
             if (!watchdog.buffer[i]->freed) {
                 for (int j = 0; j < CANARY_SIZE; j++) {
-                    if (((char *)original_ptr)[j] != CANARY_VALUE ||
-                        ((char *)original_ptr + watchdog.buffer[i]->size +
+                    if (((BYTE *)original_ptr)[j] != CANARY_VALUE ||
+                        ((BYTE *)original_ptr + watchdog.buffer[i]->size +
                          CANARY_SIZE)[j] != CANARY_VALUE) {
 
-                        WATCHDOG_LOG_ERROR("ERROR", original_ptr,
-                                           "Out of bounds access.", file, line,
+                        WATCHDOG_LOG_ERROR("Out of bounds access.", file, line,
                                            func);
                         break;
                     }
@@ -296,20 +323,20 @@ void w_free(void *ptr, const char *file, const int line, const char *func) {
                 free(watchdog.buffer[i]->ptr);
                 watchdog.buffer[i]->freed = true;
 
-                WATCHDOG_LOG("FREE", original_ptr, watchdog.buffer[i]->size,
-                             file, line, func);
+                if (verbose_log) {
+                    WATCHDOG_LOG("FREE", original_ptr, watchdog.buffer[i]->size,
+                                 file, line, func);
+                }
                 pthread_mutex_unlock(&w_mutex);
                 return;
             } else {
-                WATCHDOG_LOG_ERROR("ERROR", original_ptr, "Double free error.",
-                                   file, line, func);
+                WATCHDOG_LOG_ERROR("Double free error.", file, line, func);
                 pthread_mutex_unlock(&w_mutex);
                 return;
             }
         }
     }
-    WATCHDOG_LOG_ERROR("ERROR", original_ptr,
-                       "Attempt to free unallocated/untracked memory.", file,
+    WATCHDOG_LOG_ERROR("Attempt to free unallocated/untracked memory.", file,
                        line, func);
     pthread_mutex_unlock(&w_mutex);
     return;
@@ -318,7 +345,6 @@ void w_free(void *ptr, const char *file, const int line, const char *func) {
 void w_report(void) {
     for (int i = 0; i < watchdog.size; i++) {
         if (!watchdog.buffer[i]->freed) {
-
             WATCHDOG_LOG("LEAK", watchdog.buffer[i]->ptr,
                          watchdog.buffer[i]->size, watchdog.buffer[i]->file,
                          watchdog.buffer[i]->line, watchdog.buffer[i]->func);
@@ -378,10 +404,12 @@ static void WAM_malloc_create_internal(void *ptr, const size_t size,
 static void WAM_realloc_update_internal(void *old_ptr, void *new_ptr,
                                         const size_t new_size, const char *file,
                                         const int line, const char *func) {
+    void *original_ptr = old_ptr - CANARY_SIZE;
     for (size_t i = 0; i < watchdog.size; i++) {
-        if (watchdog.buffer[i]->ptr == old_ptr) {
+        if (watchdog.buffer[i]->ptr == original_ptr) {
             if (!watchdog.buffer[i]->freed) {
-                free(watchdog.buffer[i]->ptr);
+                free(original_ptr);
+                original_ptr = NULL;
                 watchdog.buffer[i]->ptr = new_ptr;
                 watchdog.buffer[i]->size = new_size;
                 watchdog.buffer[i]->file = file;
@@ -400,7 +428,7 @@ static void w_check_initialization_internal(void) {
     pthread_mutex_lock(&w_mutex);
     if (!w_log_file) {
         pthread_mutex_unlock(&w_mutex);
-        w_init(false, false);
+        w_init(true, false, false);
     }
     pthread_mutex_unlock(&w_mutex);
 }

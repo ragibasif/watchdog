@@ -7,7 +7,6 @@
  * Copyright (c) 2025 Ragib Asif
  * Version 1.0.0
  *
- *
  */
 
 #include "watchdog.h"
@@ -17,17 +16,20 @@ static void test_realloc(void);
 static void test_calloc(void);
 static void test_free(void);
 
-int main(int argc, [[maybe_unused]] char **argv) {
+int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
 
-    if (argc > 1) {
-        fprintf(stderr, "Error: Too many arguments.\n");
-        return EXIT_FAILURE;
-    }
-
-    bool log_to_file = true;
+    bool enable_verbose_log = true;
+    bool log_to_file = false;
     bool enable_color_output = true;
 
-    w_init(log_to_file, enable_color_output);
+    w_init(enable_verbose_log, log_to_file, enable_color_output);
+    int *a = malloc(34232);
+    free(a);
+    int *b = malloc(4232);
+    b = realloc(b, 243);
+    // free(b);
+    int *c = realloc(b, 243);
+    free(c);
 
     // int *f1 = w_malloc(1 * sizeof(int), __FILE__, __LINE__, __func__);
     // f1[1] = 34;
@@ -43,14 +45,10 @@ int main(int argc, [[maybe_unused]] char **argv) {
     // w_free(f2, __FILE__, __LINE__, __func__);
     // f3 = w_malloc(SIZE_MAX, __FILE__, __LINE__, __func__);
 
-    test_malloc();
-    test_realloc();
-    test_calloc();
-    test_free();
-
-    imd_dbg_mem_create(NULL, NULL, NULL);
-    imd_dbg_mem_dump(0);
-    // imd_dbg_mem_destroy();
+    // test_malloc();
+    // test_realloc();
+    // test_calloc();
+    // test_free();
 
     return EXIT_SUCCESS;
 }

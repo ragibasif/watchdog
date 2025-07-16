@@ -2,9 +2,6 @@
 <h1>
  Watchdog
 </h1>
-<a href="https://github.com/ragibasif/watchdog">
-    <img width=200px height=200px alt="Watchdog Logo" src="./docs/watchdog-logo.png">
-  </a>
 </div>
 
 <div align="center">

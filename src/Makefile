@@ -1,6 +1,5 @@
 # File: Makefile
 # Author: Ragib Asif
-# Email: 182296466+ragibasif@users.noreply.github.com
 # GitHub: https://github.com/ragibasif
 # LinkedIn: https://www.linkedin.com/in/ragibasif/
 # SPDX-License-Identifier: MIT
@@ -21,7 +20,7 @@ INFO:=$(BOLD)$(CYAN)
 CC := gcc
 CFLAGS := -std=c2x -Wall -Wextra -Wvla -O1 -g3 -pedantic -v -fsanitize=address,undefined -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-common
 DBG := gdb
-LDFLAGS := -v -lc -lpthread #-lm
+LDFLAGS := -v -lc -lpthread
 
 BUILD_DIRECTORY := build
 THIRDPARTY_DIRECTORY := thirdparty
