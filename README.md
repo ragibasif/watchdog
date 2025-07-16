@@ -49,8 +49,20 @@ vulnerabilities such as leaks, out of bounds errors, and double free errors.
 
 ## Realloc
 
+![./docs/realloc.svg](./docs/realloc.svg)
+
+![./docs/realloc.gif](./docs/realloc.gif)
+
 ## Calloc
 
+![./docs/calloc.svg](./docs/calloc.svg)
+
+![./docs/calloc.gif](./docs/calloc.gif)
+
 ## Free
+
+![./docs/free.svg](./docs/free.svg)
+
+![./docs/free.gif](./docs/free.gif)
 
 Disclaimer: **For educational and recreational purposes only.**

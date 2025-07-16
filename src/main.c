@@ -8,8 +8,5 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
 
     w_init(enable_verbose_log, log_to_file, enable_color_output);
 
-    int *a = malloc(sizeof *a * 1024);
-    free(a);
-
     return EXIT_SUCCESS;
 }

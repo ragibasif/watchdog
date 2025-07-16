@@ -280,13 +280,11 @@ void *w_calloc(size_t count, size_t size, const char *file, const int line,
     }
 
     void *ptr = calloc(count, size + (2 * CANARY_SIZE));
-    w_alloc_check_internal(ptr, size, __FILE__, __LINE__, __func__);
-    WAM_malloc_create_internal(ptr, size, file, line, func);
+    w_alloc_check_internal(ptr, count * size, __FILE__, __LINE__, __func__);
+    WAM_malloc_create_internal(ptr, count * size, file, line, func);
     memset(ptr, CANARY_VALUE, CANARY_SIZE);
-    memset((BYTE *)ptr + size + CANARY_SIZE, CANARY_VALUE, CANARY_SIZE);
-    for (size_t i = CANARY_SIZE; i < count; i++) {
-        ((char *)ptr)[i] = 0;
-    }
+    memset((BYTE *)ptr + (count * size) + CANARY_SIZE, CANARY_VALUE,
+           CANARY_SIZE);
 
     if (verbose_log) {
         WATCHDOG_LOG("CALLOC", ptr, size, file, line, func);
@@ -300,8 +298,6 @@ void *w_calloc(size_t count, size_t size, const char *file, const int line,
 void w_free(void *ptr, const char *file, const int line, const char *func) {
     pthread_mutex_lock(&w_mutex);
     if (!ptr) {
-        WATCHDOG_LOG_ERROR("Attempt to free unallocated/untracked memory.",
-                           file, line, func);
         pthread_mutex_unlock(&w_mutex);
         return;
     }
@@ -374,10 +370,7 @@ static void w_alloc_check_internal(void *ptr, const size_t size,
 static bool w_alloc_max_size_check_internal(const size_t size, const char *file,
                                             const int line, const char *func) {
     if (size == SIZE_MAX) {
-        fprintf(stderr,
-                "[%s:%u:(%s)] Out of memory error. %zu bytes exceeds maximum "
-                " allowed memory allocation.\n ",
-                file, line, func, size);
+        WATCHDOG_LOG_ERROR("Out of memory error.", file, line, func);
         pthread_mutex_unlock(&w_mutex);
         return false;
     }

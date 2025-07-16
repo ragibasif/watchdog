@@ -65,7 +65,7 @@
 #   Hide                            Hide the subsequent commands from the output
 #   Show                            Show the subsequent commands in the output
 
-Output demo_0.gif
+Output demo.gif
 
 Require echo
 
@@ -74,7 +74,7 @@ Set FontSize 20
 Set FontFamily "Fira Code"
 Set Theme "GitHub Dark"
 Set Width 1200
-Set Height 300
+Set Height 400
 Set BorderRadius 10
 Set TypingSpeed 25ms
 
