@@ -33,9 +33,14 @@
 </p>
 </div>
 
-Watchdog is a minimal dynamic memory debugger for tracking allocations,
-reallocations, and frees. It can detect detect common memory bugs and
-vulnerabilities such as leaks, out of bounds errors, and double free errors.
+Watchdog wraps dynamic memory functions (`malloc`, `calloc`, `realloc`, `free`) and
+tracks all memory activity at runtime:
+
+- Memory Leak Detection
+- Buffer Overflows / Out-of-Bounds Access
+- Double Free Detection
+- Verbose Logging with Optional File Output
+- Minimal Integration – Just One Header and One C File
 
 ![./docs/demo_0.svg](./docs/demo_0.svg)
 
