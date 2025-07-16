@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg width="626.67" height="369.00" xmlns="http://www.w3.org/2000/svg">
+<rect width="626.67" height="369.00" fill="#0d1117" x="0.00px" y="0.00px"/>
+<g font-family="Fira Code" font-size="14.00px" fill="#e6edf3" clip-path="url(#terminalMask)">
+<text x="20.00px" y="36.80px" xml:space="preserve"><tspan fill="#8b949e" font-weight="bold" font-style="italic">#include</tspan> <tspan fill="#8b949e" font-weight="bold" font-style="italic">&quot;watchdog.h&quot;</tspan><tspan fill="#8b949e" font-weight="bold" font-style="italic">
+</tspan></text><text x="20.00px" y="53.60px" xml:space="preserve"><tspan fill="#8b949e" font-weight="bold" font-style="italic"/>
+</text><text x="20.00px" y="70.40px" xml:space="preserve"><tspan fill="#ff7b72">int</tspan> <tspan fill="#d2a8ff" font-weight="bold">main</tspan>([[maybe_unused]] <tspan fill="#ff7b72">int</tspan> argc, [[maybe_unused]] <tspan fill="#ff7b72">char</tspan> <tspan fill="#ff7b72" font-weight="bold">**</tspan>argv) {
+</text><text x="20.00px" y="87.20px" xml:space="preserve">
+</text><text x="20.00px" y="104.00px" xml:space="preserve">    <tspan fill="#ff7b72">bool</tspan> enable_verbose_log <tspan fill="#ff7b72" font-weight="bold">=</tspan> true;
+</text><text x="20.00px" y="120.80px" xml:space="preserve">    <tspan fill="#ff7b72">bool</tspan> log_to_file <tspan fill="#ff7b72" font-weight="bold">=</tspan> false;
+</text><text x="20.00px" y="137.60px" xml:space="preserve">    <tspan fill="#ff7b72">bool</tspan> enable_color_output <tspan fill="#ff7b72" font-weight="bold">=</tspan> true;
+</text><text x="20.00px" y="154.40px" xml:space="preserve">
+</text><text x="20.00px" y="171.20px" xml:space="preserve">    <tspan fill="#d2a8ff" font-weight="bold">w_init</tspan>(enable_verbose_log, log_to_file, enable_color_output);
+</text><text x="20.00px" y="188.00px" xml:space="preserve">
+</text><text x="20.00px" y="204.80px" xml:space="preserve">    <tspan fill="#8b949e" font-style="italic">// out of bounds checking
+</tspan></text><text x="20.00px" y="221.60px" xml:space="preserve"><tspan fill="#8b949e" font-style="italic"/>    <tspan fill="#ff7b72">int</tspan> <tspan fill="#ff7b72" font-weight="bold">*</tspan>a <tspan fill="#ff7b72" font-weight="bold">=</tspan> <tspan fill="#d2a8ff" font-weight="bold">malloc</tspan>(<tspan fill="#a5d6ff">4</tspan> <tspan fill="#ff7b72" font-weight="bold">*</tspan> <tspan fill="#ff7b72">sizeof</tspan>(<tspan fill="#ff7b72">int</tspan>));
+</text><text x="20.00px" y="238.40px" xml:space="preserve">    a[<tspan fill="#a5d6ff">2</tspan>] <tspan fill="#ff7b72" font-weight="bold">=</tspan> <tspan fill="#a5d6ff">23</tspan>; <tspan fill="#8b949e" font-style="italic">// fine
+</tspan></text><text x="20.00px" y="255.20px" xml:space="preserve"><tspan fill="#8b949e" font-style="italic"/>    a[<tspan fill="#a5d6ff">4</tspan>] <tspan fill="#ff7b72" font-weight="bold">=</tspan> <tspan fill="#a5d6ff">14</tspan>; <tspan fill="#8b949e" font-style="italic">// out of bounds error
+</tspan></text><text x="20.00px" y="272.00px" xml:space="preserve"><tspan fill="#8b949e" font-style="italic"/>    <tspan fill="#d2a8ff" font-weight="bold">free</tspan>(a);
+</text><text x="20.00px" y="288.80px" xml:space="preserve">
+</text><text x="20.00px" y="305.60px" xml:space="preserve">    <tspan fill="#ff7b72">return</tspan> EXIT_SUCCESS;
+</text><text x="20.00px" y="322.40px" xml:space="preserve">}
+</text>
+</g>
+</svg>

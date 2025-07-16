@@ -65,4 +65,10 @@ vulnerabilities such as leaks, out of bounds errors, and double free errors.
 
 ![./docs/free.gif](./docs/free.gif)
 
+## Out of Bounds Checking
+
+![./docs/out-of-bounds.svg](./docs/out-of-bounds.svg)
+
+![./docs/out-of-bounds.gif](./docs/out-of-bounds.gif)
+
 Disclaimer: **For educational and recreational purposes only.**

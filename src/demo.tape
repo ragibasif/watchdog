@@ -74,7 +74,7 @@ Set FontSize 20
 Set FontFamily "Fira Code"
 Set Theme "GitHub Dark"
 Set Width 1200
-Set Height 400
+Set Height 300
 Set BorderRadius 10
 Set TypingSpeed 25ms
 
