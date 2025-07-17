@@ -39,6 +39,7 @@ tracks all memory activity at runtime:
 - Memory Leak Detection
 - Buffer Overflows / Out-of-Bounds Access
 - Double Free Detection
+- Thread Safe
 - Verbose Logging with Optional File Output
 - Minimal Integration – Just One Header and One C File
 
@@ -54,9 +55,17 @@ Include `watchdog.h` and `watchdog.c` in your project.
 
 ![./docs/project_dir.svg](./docs/project_dir.svg)
 
-Then `#include watchdog.h` in a source/header file. It will be turned on by default.
+Then `#include watchdog.h` in a source/header file and pass flag `-DWATCHDOG` to
+the CFLAGS of your build system to enable the debugger.
 
 ![./docs/include_file.svg](./docs/include_file.svg)
+
+The following line is an example of a possible build instruction. The project
+requires at least C11 to be used as intended.
+
+```sh
+gcc -std=c11 -DWATCHDOG -lpthread main.c watchdog.c -o program
+```
 
 ### Defaults
 

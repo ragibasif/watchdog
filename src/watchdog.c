@@ -8,7 +8,7 @@
  * Version 1.0.0
  */
 
-#define WATCHDOG_DISABLE
+#define WATCHDOG_INTERNAL
 #include "watchdog.h"
 
 ////////////////////////////////////////////////////////////////////////////////

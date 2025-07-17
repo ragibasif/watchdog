@@ -45,7 +45,7 @@ extern "C" {
 #define AEC_BOLD "\x1b[1m"
 #define AEC_DIM "\x1b[2m"
 
-#if !defined(WATCHDOG_DISABLE)
+#if !defined(WATCHDOG_INTERNAL) && defined(WATCHDOG)
 #define WATCHDOG_ENABLE
 #endif // !defined(WATCHDOG_DISABLE)
 
