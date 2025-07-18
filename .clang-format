@@ -1,4 +1,19 @@
 ---
-# We'll use defaults from the LLVM style, but with 4 columns indentation.
 BasedOnStyle: LLVM
-IndentWidth: 4
+IndentWidth: "4"
+UseTab: Never
+ColumnLimit: "80"
+AlignAfterOpenBracket: Align
+AlignConsecutiveMacros: "true"
+AlignConsecutiveAssignments: "true"
+AlignConsecutiveDeclarations: "true"
+AlignEscapedNewlines: Right
+AlignOperands: "true"
+AlignTrailingComments: "true"
+FixNamespaceComments: "true"
+IncludeBlocks: Regroup
+IndentCaseLabels: "true"
+MaxEmptyLinesToKeep: "1"
+SortIncludes: "true"
+SortUsingDeclarations: "true"
+SpaceBeforeAssignmentOperators: "true"
