@@ -15,12 +15,12 @@
 // Watchdog Global Variables
 ////////////////////////////////////////////////////////////////////////////////
 
-static const char *log_file_name = "watchdog.log";
-static pthread_mutex_t w_mutex = PTHREAD_MUTEX_INITIALIZER;
-static FILE *w_log_file = NULL;
-static bool verbose_log = true;
-static bool log_to_file = false;
-static bool color_output = false;
+static const char     *log_file_name = "watchdog.log";
+static pthread_mutex_t w_mutex       = PTHREAD_MUTEX_INITIALIZER;
+static FILE           *w_log_file    = NULL;
+static bool            verbose_log   = true;
+static bool            log_to_file   = false;
+static bool            color_output  = false;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -32,8 +32,8 @@ typedef unsigned char BYTE;
 
 #define WATCHDOG_LOG(prefix, ptr, size, file, line, func)                      \
     do {                                                                       \
-        time_t now = time(NULL);                                               \
-        char *time_str = ctime(&now);                                          \
+        time_t now                     = time(NULL);                           \
+        char  *time_str                = ctime(&now);                          \
         time_str[strlen(time_str) - 1] = '\0';                                 \
         if (color_output && w_log_file == stdout) {                            \
             fprintf(                                                           \
@@ -51,8 +51,8 @@ typedef unsigned char BYTE;
 
 #define WATCHDOG_LOG_ERROR(msg, file, line, func)                              \
     do {                                                                       \
-        time_t now = time(NULL);                                               \
-        char *time_str = ctime(&now);                                          \
+        time_t now                     = time(NULL);                           \
+        char  *time_str                = ctime(&now);                          \
         time_str[strlen(time_str) - 1] = '\0';                                 \
         if (color_output && w_log_file == stdout) {                            \
             fprintf(w_log_file, "%s%s[ERROR]%s %s%s [%s:%d (%s)]:%s %s%s%s\n", \
@@ -65,18 +65,18 @@ typedef unsigned char BYTE;
         fflush(w_log_file);                                                    \
     } while (0)
 
-#define CANARY_SIZE 64
+#define CANARY_SIZE  64
 #define CANARY_VALUE 0x7E
 
 typedef struct WatchdogAllocationMetadata WAM;
 
 struct WatchdogAllocationMetadata {
-    void *ptr;
-    size_t size;
-    const char *file;
+    void        *ptr;
+    size_t       size;
+    const char  *file;
     unsigned int line;
-    const char *func;
-    bool freed;
+    const char  *func;
+    bool         freed;
 };
 
 static void w_finalize(void);
@@ -102,12 +102,12 @@ static void w_check_initialization_internal(void);
 ////////////////////////////////////////////////////////////////////////////////
 
 #define WDA_DEFAULT_BUFFER_SIZE 10
-#define WDA_GROWTH_FACTOR 2
+#define WDA_GROWTH_FACTOR       2
 
 typedef struct WatchdogDynamicArray WDA;
 
 struct WatchdogDynamicArray {
-    WAM **buffer;
+    WAM  **buffer;
     size_t size;
     size_t capacity;
 };
@@ -131,8 +131,8 @@ static WDA watchdog;
 void w_init(bool enable_verbose_log, bool enable_file_log,
             bool enable_color_output) {
     pthread_mutex_lock(&w_mutex);
-    verbose_log = enable_verbose_log;
-    log_to_file = enable_file_log;
+    verbose_log  = enable_verbose_log;
+    log_to_file  = enable_file_log;
     color_output = enable_color_output;
     if (log_to_file) {
         w_log_file = fopen(log_file_name, "a");
@@ -162,8 +162,6 @@ void w_finalize(void) {
 
     pthread_mutex_unlock(&w_mutex);
 }
-
-// API
 
 void *w_malloc(const size_t size, const char *file, const int line,
                const char *func) {
@@ -282,13 +280,13 @@ void *w_calloc(size_t count, size_t size, const char *file, const int line,
         return NULL;
     }
 
-    if (!(count * size)) {
+    if (size && count > (SIZE_MAX - 2 * CANARY_SIZE) / size) {
         WATCHDOG_LOG_ERROR("Calloc parameter overflow.", file, line, func);
         pthread_mutex_unlock(&w_mutex);
         return NULL;
     }
 
-    void *ptr = calloc(count, size + (2 * CANARY_SIZE));
+    void *ptr = calloc(count * size + 2 * CANARY_SIZE, 1);
     w_alloc_check_internal(ptr, count * size, __FILE__, __LINE__, __func__);
     WAM_malloc_create_internal(ptr, count * size, file, line, func);
     memset(ptr, CANARY_VALUE, CANARY_SIZE);
@@ -296,7 +294,7 @@ void *w_calloc(size_t count, size_t size, const char *file, const int line,
            CANARY_SIZE);
 
     if (verbose_log) {
-        WATCHDOG_LOG("CALLOC", ptr, size, file, line, func);
+        WATCHDOG_LOG("CALLOC", ptr, count * size, file, line, func);
     }
 
     pthread_mutex_unlock(&w_mutex);
@@ -378,7 +376,7 @@ static void w_alloc_check_internal(void *ptr, const size_t size,
 
 static bool w_alloc_max_size_check_internal(const size_t size, const char *file,
                                             const int line, const char *func) {
-    if (size == SIZE_MAX) {
+    if (size > SIZE_MAX - 2 * CANARY_SIZE) {
         WATCHDOG_LOG_ERROR("Out of memory error.", file, line, func);
         pthread_mutex_unlock(&w_mutex);
         return false;
@@ -392,11 +390,11 @@ static void WAM_malloc_create_internal(void *ptr, const size_t size,
     WAM *data = malloc(sizeof *data);
     w_alloc_check_internal(data, sizeof *data, __FILE__, __LINE__, __func__);
 
-    data->ptr = ptr;
-    data->size = size;
-    data->file = file;
-    data->line = line;
-    data->func = func;
+    data->ptr   = ptr;
+    data->size  = size;
+    data->file  = file;
+    data->line  = line;
+    data->func  = func;
     data->freed = false;
 
     WDA_push(data);
@@ -440,9 +438,9 @@ static void w_check_initialization_internal(void) {
 
 static void WDA_init(void) {
     pthread_mutex_lock(&w_mutex);
-    watchdog.size = 0;
+    watchdog.size     = 0;
     watchdog.capacity = WDA_DEFAULT_BUFFER_SIZE;
-    watchdog.buffer = malloc(sizeof *watchdog.buffer * watchdog.capacity);
+    watchdog.buffer   = malloc(sizeof *watchdog.buffer * watchdog.capacity);
     w_alloc_check_internal(watchdog.buffer,
                            sizeof *watchdog.buffer * watchdog.capacity,
                            __FILE__, __LINE__, __func__);
@@ -479,7 +477,7 @@ static void WDA_cleanup(void) {
         free(watchdog.buffer);
         watchdog.buffer = NULL;
     }
-    watchdog.size = 0;
+    watchdog.size     = 0;
     watchdog.capacity = 0;
 }
 
