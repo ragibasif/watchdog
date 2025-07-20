@@ -106,6 +106,8 @@ If `enable_verbose_log` is set to false, only errors will be logged.
 
 ## Examples
 
+Code samples are located in a dedicated `examples/` folder.
+
 ### Malloc
 
 ```c
@@ -211,7 +213,7 @@ void overflow_example(void) {
 
 ```c
 void double_free_example(void) {
-    double *buffer = malloc(sizeof *buffer * 20);
+    char **buffer = malloc(sizeof *buffer * 20);
     free(buffer);
     free(buffer); // triggers a double-free error
 }
