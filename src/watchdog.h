@@ -34,7 +34,7 @@ extern "C" {
 // ANSI Escape Codes
 //------------------------------------------------------------------------------
 
-// Reset all attributes
+// Reset all text colors and attributes
 #define AEC_RESET "\x1b[0m"
 
 // Text colors
@@ -45,6 +45,17 @@ extern "C" {
 // Text attributes
 #define AEC_BOLD "\x1b[1m"
 #define AEC_DIM  "\x1b[2m"
+
+extern void  w_init(bool enable_verbose_log, bool log_to_file,
+                    bool enable_color_output);
+extern void *w_malloc(size_t size, const char *file, const int line,
+                      const char *func);
+extern void *w_realloc(void *old_ptr, size_t size, const char *file,
+                       const int line, const char *func);
+extern void *w_calloc(size_t count, size_t size, const char *file,
+                      const int line, const char *func);
+extern void  w_free(void *ptr, const char *file, const int line,
+                    const char *func);
 
 #if !defined(WATCHDOG_INTERNAL) && defined(WATCHDOG_ENABLE)
 #define malloc(size)        w_malloc(size, __FILE__, __LINE__, __func__)
@@ -57,18 +68,6 @@ extern "C" {
 #undef calloc
 #undef free
 #endif // !defined(WATCHDOG_DISABLE) && defined(WATCHDOG_ENABLE)
-
-extern void  w_init(bool enable_verbose_log, bool log_to_file,
-                    bool enable_color_output);
-extern void *w_malloc(size_t size, const char *file, const int line,
-                      const char *func);
-extern void *w_realloc(void *old_ptr, size_t size, const char *file,
-                       const int line, const char *func);
-extern void *w_calloc(size_t count, size_t size, const char *file,
-                      const int line, const char *func);
-extern void  w_free(void *ptr, const char *file, const int line,
-                    const char *func);
-extern void  w_report(void);
 
 #ifdef __cplusplus
 }
