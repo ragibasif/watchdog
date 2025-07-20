@@ -43,7 +43,27 @@ tracks all memory activity at runtime:
 - Verbose Logging with Optional File Output
 - Minimal Integration – Just One Header and One C File
 
-![./docs/demo_0.svg](./docs/demo_0.svg)
+```c
+#define WATCHDOG_ENABLE
+#include "watchdog.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
+
+    bool enable_verbose_log  = true;
+    bool log_to_file         = false;
+    bool enable_color_output = true;
+
+    w_init(enable_verbose_log, log_to_file, enable_color_output);
+
+    int *buffer = malloc(sizeof *buffer * 1024);
+    free(buffer);
+
+    return EXIT_SUCCESS;
+}
+```
 
 ![./docs/demo_0.gif](./docs/demo_0.gif)
 
@@ -53,24 +73,30 @@ tracks all memory activity at runtime:
 
 Include `watchdog.h` and `watchdog.c` in your project.
 
-![./docs/project_dir.svg](./docs/project_dir.svg)
-
 Then `#include watchdog.h` in a source/header file and pass flag `-DWATCHDOG_ENABLE` to
 the CFLAGS of your build system to enable the debugger or add `#define WATCHDOG_ENABLE`
 to a file.
-
-![./docs/include_file.svg](./docs/include_file.svg)
 
 ### Defaults
 
 Verbose logging is on by default, log to file is off by default, and color
 output is off by default.
 
-![./docs/defaults.svg](./docs/defaults.svg)
+```c
+static bool verbose_log  = true;
+static bool log_to_file  = false;
+static bool color_output = false;
+```
 
 To customize the defaults, pass appropriate boolean to `w_init`.
 
-![./docs/change_defaults.svg](./docs/change_defaults.svg)
+```c
+bool enable_verbose_log  = true;
+bool log_to_file         = false;
+bool enable_color_output = true;
+
+w_init(enable_verbose_log, log_to_file, enable_color_output);
+```
 
 Enabling `log_to_file` will direct log output to a log file named `watchdog.log`.
 Color output is turned off if `log_to_file` is enabled regardless of the
