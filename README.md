@@ -231,3 +231,21 @@ void invalid_free_example(void) {
 ```
 
 ![./docs/invalid_free_check.gif](./docs/invalid_free_check.gif)
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+## FAQ
+
+### Does Watchdog work in production builds?
+
+No. It's intended for development/debug builds.
+
+### Does it detect stack overflows?
+
+No. It only monitors dynamic memory (heap).
+
+### What systems does it support?
+
+POSIX-compliant systems (Linux, macOS). Windows support is limited (for now).
