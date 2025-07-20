@@ -428,13 +428,15 @@ static void w_check_initialization_internal(void) {
 }
 
 static void w_report(void) {
+    verbose_log = false;
     for (int i = 0; i < watchdog.size; i++) {
         if (!watchdog.buffer[i]->freed) {
             WATCHDOG_LOG("LEAK", (BYTE *)watchdog.buffer[i]->ptr + CANARY_SIZE,
                          watchdog.buffer[i]->size, watchdog.buffer[i]->file,
                          watchdog.buffer[i]->line, watchdog.buffer[i]->func);
-            free(watchdog.buffer[i]->ptr);
-            watchdog.buffer[i]->ptr = NULL;
+            w_free((BYTE *)watchdog.buffer[i]->ptr + CANARY_SIZE,
+                   watchdog.buffer[i]->file, watchdog.buffer[i]->line,
+                   watchdog.buffer[i]->func);
         }
     }
 }

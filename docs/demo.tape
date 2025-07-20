@@ -72,14 +72,14 @@ Output demo.webm
 Require echo
 
 Set Shell "zsh"
-Set FontSize 32
+Set FontSize 24
 Set FontFamily "Fira Code"
 Set Theme "GitHub Dark"
-Set Width 1200
-Set Height 600
+Set Width 1600
+Set Height 300
 Set BorderRadius 10
 Set TypingSpeed 25ms
 
 Type "echo Welcome!" Sleep 500ms Enter
 
-Sleep 1s
+Sleep 5s

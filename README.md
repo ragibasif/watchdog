@@ -78,34 +78,128 @@ Color output is turned off if `log_to_file` is enabled regardless of the
 
 If `enable_verbose_log` is set to false, only errors will be logged.
 
+## Examples
+
 ### Malloc
 
-![./docs/malloc.svg](./docs/malloc.svg)
+```c
+void malloc_example(void) {
+
+    size_t count  = 5;
+    int   *buffer = malloc(sizeof *buffer * 5);
+    for (size_t i = 0; i < count; i++) {
+        buffer[i] = -(i - count) * count;
+    }
+    for (size_t i = 0; i < count; i++) {
+        printf("%d ", buffer[i]);
+    }
+
+    putchar('\n');
+    free(buffer);
+    buffer = NULL;
+}
+```
 
 ![./docs/malloc.gif](./docs/malloc.gif)
 
 ### Realloc
 
-![./docs/realloc.svg](./docs/realloc.svg)
+```c
+void realloc_example(void) {
+    short *buffer = malloc(34222);
+    buffer        = realloc(buffer, 2342);
+    buffer        = realloc(buffer, 2342342);
+    buffer        = realloc(buffer, 2);
+    buffer        = realloc(buffer, 10);
+    buffer        = realloc(buffer, 0);
+    free(buffer);
+    buffer = NULL;
+}
+```
 
 ![./docs/realloc.gif](./docs/realloc.gif)
 
 ### Calloc
 
-![./docs/calloc.svg](./docs/calloc.svg)
+```c
+void calloc_example(void) {
+    // Demonstrates correct usage of calloc
+    size_t count  = 5;
+    int   *buffer = calloc(count, sizeof *buffer);
+    for (size_t i = 0; i < count; i++) {
+        printf("%d ", buffer[i]); // should output 0
+    }
+    putchar('\n');
+    free(buffer);
+    buffer = NULL;
+}
+```
 
 ![./docs/calloc.gif](./docs/calloc.gif)
 
 ### Free
 
-![./docs/free.svg](./docs/free.svg)
+```c
+void free_example(void) {
+    // Demonstrates correct usage of free
+    size_t         count   = 5;
+    short int     *buffer0 = malloc(sizeof *buffer0 * count);
+    unsigned char *buffer1 = calloc(count, sizeof *buffer1);
+    long double   *buffer2 = realloc(buffer2, sizeof *buffer2 * count);
+    free(buffer1);
+    buffer1 = NULL;
+    free(buffer2);
+    buffer2 = NULL;
+    free(buffer0);
+    buffer1 = NULL;
+}
+```
 
 ![./docs/free.gif](./docs/free.gif)
 
-### Out of Bounds Checking
+### Leak Check
 
-![./docs/out-of-bounds.svg](./docs/out-of-bounds.svg)
+```c
+void leak_example(void) {
+    unsigned long long int *buffer = malloc(sizeof *buffer * 20);
+    // intentionally not calling free
+    // watchdog will detect this and report it
+}
+```
 
-![./docs/out-of-bounds.gif](./docs/out-of-bounds.gif)
+![./docs/leak_check.gif](./docs/leak_check.gif)
 
-Disclaimer: **For educational and recreational purposes only.**
+### Overflow Check
+
+```c
+void overflow_example(void) {
+    char *buffer = malloc(sizeof *buffer * 10);
+    strcpy(buffer, "This will overflow"); // out-of-bounds write
+    // of buffer overflows will be detected with using canary values
+}
+```
+
+![./docs/overflow_check.gif](./docs/overflow_check.gif)
+
+### Double Free Check
+
+```c
+void double_free_example(void) {
+    double *buffer = malloc(sizeof *buffer * 20);
+    free(buffer);
+    free(buffer); // triggers a double-free error
+}
+```
+
+![./docs/double_free_check.gif](./docs/double_free_check.gif)
+
+### Invalid Free Check
+
+```c
+void invalid_free_example(void) {
+    float *buffer;
+    free(buffer); // will trigger an error since buffer wasn't allocated
+}
+```
+
+![./docs/invalid_free_check.gif](./docs/invalid_free_check.gif)
