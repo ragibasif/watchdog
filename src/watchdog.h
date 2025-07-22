@@ -38,9 +38,9 @@ extern "C" {
 #define AEC_RESET "\x1b[0m"
 
 // Text colors
-#define AEC_RED     "\x1b[31m"
-#define AEC_MAGENTA "\x1b[35m"
-#define AEC_CYAN    "\x1b[36m"
+#define AEC_RED     "\x1b[91m"
+#define AEC_MAGENTA "\x1b[95m"
+#define AEC_CYAN    "\x1b[96m"
 
 // Text attributes
 #define AEC_BOLD "\x1b[1m"
