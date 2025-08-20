@@ -92,8 +92,6 @@ static void WAM_alloc_create_internal(void *ptr, const size_t size,
 static void WAM_realloc_update_internal(void *old_ptr, void *new_ptr,
                                         const size_t new_size, const char *file,
                                         const int line, const char *func);
-static void WAM_free_update_internal(void *ptr, const char *file,
-                                     const int line, const char *func);
 static void w_check_initialization_internal(void);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -117,7 +115,6 @@ static void WDA_init(void);
 static void WDA_push(void *ptr);
 static void WDA_pop(void);
 static void WDA_cleanup(void);
-static bool WDA_index_in_bounds_check_internal(size_t index);
 static void WDA_expand_capacity_internal(void);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -188,8 +185,8 @@ void *w_malloc(const size_t size, const char *file, const int line,
     memset((BYTE *)ptr + size + CANARY_SIZE, CANARY_VALUE, CANARY_SIZE);
 
     if (verbose_log) {
-        WATCHDOG_LOG("MALLOC", (BYTE *)ptr + CANARY_SIZE, size, file, line,
-                     func);
+        WATCHDOG_LOG("MALLOC", (void *)((BYTE *)ptr + CANARY_SIZE), size, file,
+                     line, func);
     }
     pthread_mutex_unlock(&w_mutex);
 
@@ -211,7 +208,7 @@ void *w_realloc(void *old_ptr, size_t size, const char *file, const int line,
 
     size_t old_ptr_size;
 
-    void *original_ptr = old_ptr - CANARY_SIZE;
+    void *original_ptr = (BYTE *)old_ptr - CANARY_SIZE;
     for (size_t i = 0; i < watchdog.size; i++) {
         if (watchdog.buffer[i]->ptr == original_ptr) {
             old_ptr_size = watchdog.buffer[i]->size;
@@ -255,8 +252,8 @@ void *w_realloc(void *old_ptr, size_t size, const char *file, const int line,
     old_ptr = NULL;
 
     if (verbose_log) {
-        WATCHDOG_LOG("REALLOC", (BYTE *)new_ptr + CANARY_SIZE, size, file, line,
-                     func);
+        WATCHDOG_LOG("REALLOC", (void *)((BYTE *)new_ptr + CANARY_SIZE), size,
+                     file, line, func);
     }
     pthread_mutex_unlock(&w_mutex);
 
@@ -299,8 +296,8 @@ void *w_calloc(size_t count, size_t size, const char *file, const int line,
            CANARY_SIZE);
 
     if (verbose_log) {
-        WATCHDOG_LOG("CALLOC", (BYTE *)ptr + CANARY_SIZE, count * size, file,
-                     line, func);
+        WATCHDOG_LOG("CALLOC", (void *)((BYTE *)ptr + CANARY_SIZE),
+                     count * size, file, line, func);
     }
 
     pthread_mutex_unlock(&w_mutex);
@@ -333,9 +330,10 @@ void w_free(void *ptr, const char *file, const int line, const char *func) {
                 watchdog.buffer[i]->freed = true;
 
                 if (verbose_log) {
-                    WATCHDOG_LOG("FREE",
-                                 (BYTE *)watchdog.buffer[i]->ptr + CANARY_SIZE,
-                                 watchdog.buffer[i]->size, file, line, func);
+                    WATCHDOG_LOG(
+                        "FREE",
+                        (void *)((BYTE *)watchdog.buffer[i]->ptr + CANARY_SIZE),
+                        watchdog.buffer[i]->size, file, line, func);
                 }
                 pthread_mutex_unlock(&w_mutex);
                 return;
@@ -401,7 +399,7 @@ static void WAM_alloc_create_internal(void *ptr, const size_t size,
 static void WAM_realloc_update_internal(void *old_ptr, void *new_ptr,
                                         const size_t new_size, const char *file,
                                         const int line, const char *func) {
-    void *original_ptr = old_ptr - CANARY_SIZE;
+    void *original_ptr = (BYTE *)old_ptr - CANARY_SIZE;
     for (size_t i = 0; i < watchdog.size; i++) {
         if (watchdog.buffer[i]->ptr == original_ptr) {
             if (!watchdog.buffer[i]->freed) {
@@ -429,11 +427,12 @@ static void w_check_initialization_internal(void) {
 
 static void w_report(void) {
     verbose_log = false;
-    for (int i = 0; i < watchdog.size; i++) {
+    for (size_t i = 0; i < watchdog.size; i++) {
         if (!watchdog.buffer[i]->freed) {
-            WATCHDOG_LOG("LEAK", (BYTE *)watchdog.buffer[i]->ptr + CANARY_SIZE,
-                         watchdog.buffer[i]->size, watchdog.buffer[i]->file,
-                         watchdog.buffer[i]->line, watchdog.buffer[i]->func);
+            WATCHDOG_LOG(
+                "LEAK", (void *)((BYTE *)watchdog.buffer[i]->ptr + CANARY_SIZE),
+                watchdog.buffer[i]->size, watchdog.buffer[i]->file,
+                watchdog.buffer[i]->line, watchdog.buffer[i]->func);
             w_free((BYTE *)watchdog.buffer[i]->ptr + CANARY_SIZE,
                    watchdog.buffer[i]->file, watchdog.buffer[i]->line,
                    watchdog.buffer[i]->func);
@@ -491,15 +490,6 @@ static void WDA_cleanup(void) {
 ////////////////////////////////////////////////////////////////////////////////
 // Watchdog Internal Dynamic Array Internals Definitions
 ////////////////////////////////////////////////////////////////////////////////
-
-static bool WDA_index_in_bounds_check_internal(size_t index) {
-    if (index >= 0 && index < watchdog.size) {
-        return true;
-    }
-    fprintf(stderr, "Index Out Of Bounds Error: %zu is out of bounds of %zu.\n",
-            index, watchdog.size);
-    return false;
-}
 
 static void WDA_expand_capacity_internal(void) {
     watchdog.capacity *= WDA_GROWTH_FACTOR;
