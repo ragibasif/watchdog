@@ -6,25 +6,25 @@
 
 <div align="center">
 <p>
-  <a href="https://github.com/ragibasif/watchdog">
+  <a href="https://github.com/ragibasif/watchdog" target="_blank" rel="noopener noreferrer">
     <img alt="GitHub" src="https://img.shields.io/badge/GitHub-0D1117?style=for-the-badge&logo=github&logoColor=C9D1D9">
   </a>
-  <a href="https://github.com/ragibasif/watchdog/pulse">
+  <a href="https://github.com/ragibasif/watchdog/pulse" target="_blank" rel="noopener noreferrer">
     <img alt="Last Commit" src="https://img.shields.io/github/last-commit/ragibasif/watchdog?style=for-the-badge&logo=github&color=58A6FF&logoColor=C9D1D9&labelColor=0D1117">
   </a>
-  <a href="https://github.com/ragibasif/watchdog/stargazers">
+  <a href="https://github.com/ragibasif/watchdog/stargazers" target="_blank" rel="noopener noreferrer">
     <img alt="Stars" src="https://img.shields.io/github/stars/ragibasif/watchdog?style=for-the-badge&logo=apachespark&color=D29922&logoColor=C9D1D9&labelColor=0D1117">
   </a>
-  <a href="https://github.com/ragibasif/watchdog/network/members">
+  <a href="https://github.com/ragibasif/watchdog/network/members" target="_blank" rel="noopener noreferrer">
     <img alt="Forks" src="https://img.shields.io/github/forks/ragibasif/watchdog?style=for-the-badge&logo=github&color=3FB950&logoColor=C9D1D9&labelColor=0D1117">
   </a>
-  <a href="https://visitorbadge.io/status?path=https%3A%2F%2Fgithub.com%2Fragibasif%2Fwatchdog">
+  <a href="https://visitorbadge.io/status?path=https%3A%2F%2Fgithub.com%2Fragibasif%2Fwatchdog" target="_blank" rel="noopener noreferrer">
     <img alt="Visitors" src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2Fragibasif%2Fwatchdog&label=visitors&labelColor=%230D1117&countColor=%2358A6FF">
   </a>
-  <a href="https://github.com/ragibasif/watchdog/issues">
+  <a href="https://github.com/ragibasif/watchdog/issues" target="_blank" rel="noopener noreferrer">
     <img alt="Issues" src="https://img.shields.io/github/issues/ragibasif/watchdog?style=for-the-badge&logo=bilibili&color=F85149&logoColor=C9D1D9&labelColor=0D1117">
   </a>
-  <a href="https://github.com/ragibasif/watchdog/blob/master/LICENSE">
+  <a href="https://github.com/ragibasif/watchdog/blob/master/LICENSE" target="_blank" rel="noopener noreferrer">
     <img alt="License" src="https://img.shields.io/github/license/ragibasif/watchdog?style=for-the-badge&logo=starship&color=8957E5&logoColor=C9D1D9&labelColor=0D1117">
   </a>
 </p>
@@ -32,10 +32,18 @@
 
 ---
 
-[![Email](https://img.shields.io/badge/Email-0D1117?logo=maildotru&logoColor=C9D1D9&style=for-the-badge)](mailto:ragib.asif30@myhunter.cuny.edu)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0D1117?logo=linkedin&logoColor=C9D1D9&style=for-the-badge)](https://www.linkedin.com/in/ragibasif/)
-[![GitHub](https://img.shields.io/badge/GitHub-0D1117?style=for-the-badge&logo=github&logoColor=C9D1D9)](https://github.com/ragibasif)
-[![YouTube](https://img.shields.io/badge/YouTube-0D1117?style=for-the-badge&logo=youtube&logoColor=C9D1D9)](https://www.youtube.com/@ragib_asif)
+<a href="mailto:ragib.asif30@myhunter.cuny.edu">
+  <img src="https://img.shields.io/badge/Email-0D1117?logo=maildotru&logoColor=C9D1D9&style=for-the-badge" alt="Email" />
+</a>
+<a href="https://www.linkedin.com/in/ragibasif/" target="_blank" rel="noopener noreferrer">
+  <img src="https://img.shields.io/badge/LinkedIn-0D1117?logo=linkedin&logoColor=C9D1D9&style=for-the-badge" alt="LinkedIn" />
+</a>
+<a href="https://github.com/ragibasif" target="_blank" rel="noopener noreferrer">
+  <img src="https://img.shields.io/badge/GitHub-0D1117?style=for-the-badge&logo=github&logoColor=C9D1D9" alt="GitHub" />
+</a>
+<a href="https://www.youtube.com/@ragib_asif" target="_blank" rel="noopener noreferrer">
+  <img src="https://img.shields.io/badge/YouTube-0D1117?style=for-the-badge&logo=youtube&logoColor=C9D1D9" alt="YouTube" />
+</a>
 
 Watchdog wraps dynamic memory functions (`malloc`, `calloc`, `realloc`, `free`) and
 tracks all memory activity at runtime:
@@ -46,6 +54,11 @@ tracks all memory activity at runtime:
 - Thread Safe
 - Verbose Logging with Optional File Output
 - Minimal Integration – Just One Header and One C File
+
+<ul>
+  <li><a href="https://www.youtube.com/watch?v=juKcJpgxBVk" target="_blank" rel="noopener noreferrer">YouTube - Stop Memory Leaks In C With Watchdog</a></li>
+  <li><a href="https://ragibasif.github.io/blog/0001-post/" target="_blank" rel="noopener noreferrer">Blog - Why I Built A Memory Debugger</a></li>
+</ul>
 
 ```c
 #define WATCHDOG_ENABLE
