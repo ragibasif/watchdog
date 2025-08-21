@@ -55,10 +55,9 @@ tracks all memory activity at runtime:
 - Verbose Logging with Optional File Output
 - Minimal Integration – Just One Header and One C File
 
-<ul>
-  <li><a href="https://www.youtube.com/watch?v=juKcJpgxBVk" target="_blank" rel="noopener noreferrer">YouTube - Stop Memory Leaks In C With Watchdog</a></li>
-  <li><a href="https://ragibasif.github.io/blog/0001-post/" target="_blank" rel="noopener noreferrer">Blog - Why I Built A Memory Debugger</a></li>
-</ul>
+<a href="https://www.youtube.com/watch?v=juKcJpgxBVk" target="_blank" rel="noopener noreferrer">YouTube - Stop Memory Leaks In C With Watchdog</a>
+
+<a href="https://ragibasif.github.io/blog/0001-post/" target="_blank" rel="noopener noreferrer">Blog - Why I Built A Memory Debugger</a>
 
 ```c
 #define WATCHDOG_ENABLE
