@@ -147,19 +147,15 @@ void w_init(bool enable_verbose_log, bool enable_file_log,
 }
 
 void w_finalize(void) {
-    // pthread_mutex_lock(&w_mutex);
 
-    // pthread_mutex_unlock(&w_mutex);
+    pthread_mutex_unlock(&w_mutex);
     w_report();
-    // pthread_mutex_lock(&w_mutex);
     WDA_cleanup();
 
     if (w_log_file && w_log_file != stdout) {
         fclose(w_log_file);
         w_log_file = NULL;
     }
-
-    pthread_mutex_unlock(&w_mutex);
 }
 
 void *w_malloc(const size_t size, const char *file, const int line,
