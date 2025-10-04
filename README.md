@@ -32,7 +32,7 @@
 
 ---
 
-<a href="mailto:ragib.asif30@myhunter.cuny.edu">
+<a href="mailto:ragibasif@tuta.io">
   <img src="https://img.shields.io/badge/Email-0D1117?logo=maildotru&logoColor=C9D1D9&style=for-the-badge" alt="Email" />
 </a>
 <a href="https://www.linkedin.com/in/ragibasif/" target="_blank" rel="noopener noreferrer">
