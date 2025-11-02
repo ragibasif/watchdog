@@ -381,6 +381,11 @@ static void WAM_alloc_create_internal(void *ptr, const size_t size,
     WAM *data = malloc(sizeof *data);
     w_alloc_check_internal(data, sizeof *data, __FILE__, __LINE__, __func__);
 
+#if WATCHDOG_COPY_STRINGS
+    file = file ? strdup(file) : NULL;
+    func = func ? strdup(func) : NULL;
+#endif
+
     data->ptr   = ptr;
     data->size  = size;
     data->file  = file;
@@ -465,7 +470,13 @@ static void WDA_pop(void) {
         return;
     }
     watchdog.size--;
-    free(watchdog.buffer[watchdog.size]);
+    if (watchdog.buffer[watchdog.size]) {
+#if WATCHDOG_COPY_STRINGS
+        free(watchdog.buffer[watchdog.size]->file);
+        free(watchdog.buffer[watchdog.size]->func);
+#endif
+        free(watchdog.buffer[watchdog.size]);
+    }
     watchdog.buffer[watchdog.size] = NULL;
 }
 
