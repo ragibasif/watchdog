@@ -308,7 +308,10 @@ void w_free(void *ptr, const char *file, const int line, const char *func) {
         return;
     }
     void *original_ptr = (BYTE *)ptr - CANARY_SIZE;
-    for (size_t i = 0; i < watchdog.size; i++) {
+
+    // Search from the end to prefer the most-recent allocation record for this address.
+    // This avoids false double-free errors when the allocator reuses the same addresses.
+    for (size_t i = watchdog.size; i-- > 0; ) {
         if (watchdog.buffer[i]->ptr == original_ptr) {
             if (!watchdog.buffer[i]->freed) {
                 for (int j = 0; j < CANARY_SIZE; j++) {
@@ -470,13 +473,13 @@ static void WDA_pop(void) {
         return;
     }
     watchdog.size--;
-    if (watchdog.buffer[watchdog.size]) {
 #if WATCHDOG_COPY_STRINGS
+    if (watchdog.buffer[watchdog.size]) {
         free(watchdog.buffer[watchdog.size]->file);
         free(watchdog.buffer[watchdog.size]->func);
-#endif
-        free(watchdog.buffer[watchdog.size]);
     }
+#endif
+    free(watchdog.buffer[watchdog.size]);
     watchdog.buffer[watchdog.size] = NULL;
 }
 
