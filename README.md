@@ -246,6 +246,10 @@ void invalid_free_example(void) {
 
 ![./docs/invalid_free_check.gif](./docs/invalid_free_check.gif)
 
+## Contributing
+
+Interested in contributing? Please see our [Contributing Guide](CONTRIBUTING.md) for guidelines on how to help improve Watchdog.
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
