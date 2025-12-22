@@ -1,11 +1,12 @@
 /*
  * File: watchdog.c
  * Author: Ragib Asif
+ * Email: ragibasif@tuta.io
  * GitHub: https://github.com/ragibasif
  * LinkedIn: https://www.linkedin.com/in/ragibasif/
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2025 Ragib Asif
- * Version 1.0.0
+ * Version 1.1.0
  */
 
 #define WATCHDOG_INTERNAL
@@ -309,9 +310,10 @@ void w_free(void *ptr, const char *file, const int line, const char *func) {
     }
     void *original_ptr = (BYTE *)ptr - CANARY_SIZE;
 
-    // Search from the end to prefer the most-recent allocation record for this address.
-    // This avoids false double-free errors when the allocator reuses the same addresses.
-    for (size_t i = watchdog.size; i-- > 0; ) {
+    // Search from the end to prefer the most-recent allocation record for this
+    // address. This avoids false double-free errors when the allocator reuses
+    // the same addresses.
+    for (size_t i = watchdog.size; i-- > 0;) {
         if (watchdog.buffer[i]->ptr == original_ptr) {
             if (!watchdog.buffer[i]->freed) {
                 for (int j = 0; j < CANARY_SIZE; j++) {

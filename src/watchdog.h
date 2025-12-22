@@ -1,11 +1,12 @@
 /*
  * File: watchdog.h
  * Author: Ragib Asif
+ * Email: ragibasif@tuta.io
  * GitHub: https://github.com/ragibasif
  * LinkedIn: https://www.linkedin.com/in/ragibasif/
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2025 Ragib Asif
- * Version 1.0.0
+ * Version 1.1.0
  */
 
 #ifndef WATCHDOG_H_
@@ -15,10 +16,12 @@
 extern "C" {
 #endif // __cplusplus
 
-// Option which clones all strings (file and func names) to prevent broken references
-// (useful in case when dynamic libraries are involved). This may have performance and memory usage impact.
-// Another option is to keep all loaded libraries till the program ends (see RTLD_NODELETE
-// and GET_MODULE_HANDLE_EX_FLAG_PIN (nb: FreeLibrary does not work with GET_MODULE_HANDLE_EX_FLAG_PIN flag)).
+// Option which clones all strings (file and func names) to prevent broken
+// references (useful in case when dynamic libraries are involved). This may
+// have performance and memory usage impact. Another option is to keep all
+// loaded libraries till the program ends (see RTLD_NODELETE and
+// GET_MODULE_HANDLE_EX_FLAG_PIN (nb: FreeLibrary does not work with
+// GET_MODULE_HANDLE_EX_FLAG_PIN flag)).
 #ifndef WATCHDOG_COPY_STRINGS
 #define WATCHDOG_COPY_STRINGS 0
 #endif // WATCHDOG_COPY_STRINGS

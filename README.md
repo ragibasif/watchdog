@@ -79,7 +79,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
 }
 ```
 
-![./docs/demo_0.gif](./docs/demo_0.gif)
+![./assets/demo_0.gif](./assets/demo_0.gif)
 
 ## Usage
 
@@ -142,7 +142,7 @@ void malloc_example(void) {
 }
 ```
 
-![./docs/malloc.gif](./docs/malloc.gif)
+![./assets/malloc.gif](./assets/malloc.gif)
 
 ### Realloc
 
@@ -159,7 +159,7 @@ void realloc_example(void) {
 }
 ```
 
-![./docs/realloc.gif](./docs/realloc.gif)
+![./assets/realloc.gif](./assets/realloc.gif)
 
 ### Calloc
 
@@ -177,7 +177,7 @@ void calloc_example(void) {
 }
 ```
 
-![./docs/calloc.gif](./docs/calloc.gif)
+![./assets/calloc.gif](./assets/calloc.gif)
 
 ### Free
 
@@ -197,7 +197,7 @@ void free_example(void) {
 }
 ```
 
-![./docs/free.gif](./docs/free.gif)
+![./assets/free.gif](./assets/free.gif)
 
 ### Leak Check
 
@@ -209,7 +209,7 @@ void leak_example(void) {
 }
 ```
 
-![./docs/leak_check.gif](./docs/leak_check.gif)
+![./assets/leak_check.gif](./assets/leak_check.gif)
 
 ### Overflow Check
 
@@ -221,7 +221,7 @@ void overflow_example(void) {
 }
 ```
 
-![./docs/overflow_check.gif](./docs/overflow_check.gif)
+![./assets/overflow_check.gif](./assets/overflow_check.gif)
 
 ### Double Free Check
 
@@ -233,7 +233,7 @@ void double_free_example(void) {
 }
 ```
 
-![./docs/double_free_check.gif](./docs/double_free_check.gif)
+![./assets/double_free_check.gif](./assets/double_free_check.gif)
 
 ### Invalid Free Check
 
@@ -244,7 +244,7 @@ void invalid_free_example(void) {
 }
 ```
 
-![./docs/invalid_free_check.gif](./docs/invalid_free_check.gif)
+![./assets/invalid_free_check.gif](./assets/invalid_free_check.gif)
 
 ## Contributing
 
