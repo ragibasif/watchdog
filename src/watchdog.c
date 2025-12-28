@@ -129,7 +129,7 @@ typedef struct {
     size_t total_frees;
     size_t current_usage;
     size_t peak_usage;
-    size_t total_time_spent; // in seconds
+    double total_time_spent; // in seconds
 } WatchdogStats;
 
 static WatchdogStats w_stats = {0};
@@ -185,9 +185,17 @@ void w_finalize(void) {
 void *w_malloc(const size_t size, const char *file, const int line,
                const char *func) {
 
+    double start_time = w_get_time();
     w_check_initialization_internal();
 
     pthread_mutex_lock(&w_mutex);
+
+    w_stats.total_allocations++;
+    w_stats.current_usage += size;
+    if (w_stats.current_usage > w_stats.peak_usage) {
+        w_stats.peak_usage = w_stats.current_usage;
+    }
+
     if (!w_alloc_max_size_check_internal(size, file, line, func)) {
         pthread_mutex_unlock(&w_mutex);
         return NULL;
@@ -208,6 +216,8 @@ void *w_malloc(const size_t size, const char *file, const int line,
         WATCHDOG_LOG("MALLOC", (void *)((BYTE *)ptr + CANARY_SIZE), size, file,
                      line, func);
     }
+
+    w_stats.total_time_spent += (w_get_time() - start_time);
     pthread_mutex_unlock(&w_mutex);
 
     return (BYTE *)ptr + CANARY_SIZE;
@@ -216,11 +226,19 @@ void *w_malloc(const size_t size, const char *file, const int line,
 void *w_realloc(void *old_ptr, size_t size, const char *file, const int line,
                 const char *func) {
 
+    double start_time = w_get_time();
     w_check_initialization_internal();
 
     pthread_mutex_lock(&w_mutex);
 
+    w_stats.total_allocations++;
+    w_stats.current_usage += size;
+    if (w_stats.current_usage > w_stats.peak_usage) {
+        w_stats.peak_usage = w_stats.current_usage;
+    }
+
     if (!old_ptr) {
+        w_stats.total_time_spent += (w_get_time() - start_time);
         pthread_mutex_unlock(&w_mutex);
         void *temp = w_malloc(size, file, line, func);
         return temp;
@@ -235,6 +253,7 @@ void *w_realloc(void *old_ptr, size_t size, const char *file, const int line,
             if (watchdog.buffer[i]->freed) {
                 WATCHDOG_LOG_ERROR("Attempt to reallocate a freed pointer.",
                                    file, line, func);
+                w_stats.total_time_spent += (w_get_time() - start_time);
                 pthread_mutex_unlock(&w_mutex);
                 return NULL;
             } else {
@@ -244,11 +263,13 @@ void *w_realloc(void *old_ptr, size_t size, const char *file, const int line,
     }
 
     if (!w_alloc_max_size_check_internal(size, file, line, func)) {
+        w_stats.total_time_spent += (w_get_time() - start_time);
         pthread_mutex_unlock(&w_mutex);
         w_free(old_ptr, file, line, func);
         return NULL;
     }
     if (!size) {
+        w_stats.total_time_spent += (w_get_time() - start_time);
         pthread_mutex_unlock(&w_mutex);
         w_free(old_ptr, file, line, func);
         return NULL;
@@ -266,6 +287,7 @@ void *w_realloc(void *old_ptr, size_t size, const char *file, const int line,
     memcpy((BYTE *)new_ptr + CANARY_SIZE, old_ptr, move_size);
     WAM_realloc_update_internal(old_ptr, new_ptr, size, file, line, func);
     if (!new_ptr) {
+        w_stats.total_time_spent += (w_get_time() - start_time);
         pthread_mutex_unlock(&w_mutex);
         return NULL;
     }
@@ -275,6 +297,7 @@ void *w_realloc(void *old_ptr, size_t size, const char *file, const int line,
         WATCHDOG_LOG("REALLOC", (void *)((BYTE *)new_ptr + CANARY_SIZE), size,
                      file, line, func);
     }
+    w_stats.total_time_spent += (w_get_time() - start_time);
     pthread_mutex_unlock(&w_mutex);
 
     return (BYTE *)new_ptr + CANARY_SIZE;
@@ -282,27 +305,39 @@ void *w_realloc(void *old_ptr, size_t size, const char *file, const int line,
 
 void *w_calloc(size_t count, size_t size, const char *file, const int line,
                const char *func) {
+
+    double start_time = w_get_time();
     w_check_initialization_internal();
 
     pthread_mutex_lock(&w_mutex);
 
+    w_stats.total_allocations++;
+    w_stats.current_usage += size;
+    if (w_stats.current_usage > w_stats.peak_usage) {
+        w_stats.peak_usage = w_stats.current_usage;
+    }
+
     if (!count) {
+        w_stats.total_time_spent += (w_get_time() - start_time);
         pthread_mutex_unlock(&w_mutex);
         return NULL;
     }
 
     if (!w_alloc_max_size_check_internal(size, file, line, func)) {
+        w_stats.total_time_spent += (w_get_time() - start_time);
         pthread_mutex_unlock(&w_mutex);
         return NULL;
     }
 
     if (!size) {
+        w_stats.total_time_spent += (w_get_time() - start_time);
         pthread_mutex_unlock(&w_mutex);
         return NULL;
     }
 
     if (count * size > (SIZE_MAX - 2 * CANARY_SIZE)) {
         WATCHDOG_LOG_ERROR("Calloc parameter overflow.", file, line, func);
+        w_stats.total_time_spent += (w_get_time() - start_time);
         pthread_mutex_unlock(&w_mutex);
         return NULL;
     }
@@ -320,13 +355,17 @@ void *w_calloc(size_t count, size_t size, const char *file, const int line,
                      count * size, file, line, func);
     }
 
+    w_stats.total_time_spent += (w_get_time() - start_time);
     pthread_mutex_unlock(&w_mutex);
 
     return (BYTE *)ptr + CANARY_SIZE;
 }
 
 void w_free(void *ptr, const char *file, const int line, const char *func) {
+    double start_time = w_get_time();
+
     pthread_mutex_lock(&w_mutex);
+
     if (!ptr) {
         pthread_mutex_unlock(&w_mutex);
         return;
@@ -359,10 +398,14 @@ void w_free(void *ptr, const char *file, const int line, const char *func) {
                         (void *)((BYTE *)watchdog.buffer[i]->ptr + CANARY_SIZE),
                         watchdog.buffer[i]->size, file, line, func);
                 }
+                w_stats.current_usage -= watchdog.buffer[i]->size;
+                w_stats.total_frees++;
+                w_stats.total_time_spent += (w_get_time() - start_time);
                 pthread_mutex_unlock(&w_mutex);
                 return;
             } else {
                 WATCHDOG_LOG_ERROR("Double free error.", file, line, func);
+                w_stats.total_time_spent += (w_get_time() - start_time);
                 pthread_mutex_unlock(&w_mutex);
                 return;
             }
@@ -370,6 +413,7 @@ void w_free(void *ptr, const char *file, const int line, const char *func) {
     }
     WATCHDOG_LOG_ERROR("Attempt to free unallocated/untracked memory.", file,
                        line, func);
+    w_stats.total_time_spent += (w_get_time() - start_time);
     pthread_mutex_unlock(&w_mutex);
     return;
 }
@@ -467,6 +511,19 @@ static void w_report(void) {
                    watchdog.buffer[i]->func);
         }
     }
+
+    fprintf(w_log_file, "\nWatchdog Report:\n");
+    fprintf(w_log_file, "Total Allocations:  %zu\n", w_stats.total_allocations);
+    fprintf(w_log_file, "Total Frees:        %zu\n", w_stats.total_frees);
+    fprintf(w_log_file, "Peak Memory Usage:  %zu Bytes (%.2f MB)\n",
+            w_stats.peak_usage, w_stats.peak_usage / 1024.0 / 1024.0);
+    fprintf(w_log_file, "Total Tool Latency: %.6f seconds\n",
+            w_stats.total_time_spent);
+    fprintf(w_log_file, "Avg Latency/Alloc:  %.6f ms\n",
+            (w_stats.total_allocations > 0)
+                ? (w_stats.total_time_spent / w_stats.total_allocations) * 1000
+                : 0);
+    fprintf(w_log_file, "\n\n");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
