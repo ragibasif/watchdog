@@ -3,14 +3,15 @@ FROM ubuntu:22.04
 RUN apt-get update && apt-get install -y \
     build-essential \
     gcc \
-    cmake \
     python3 \
-    valgrind
+    && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+WORKDIR /watchdog
 
-COPY . .
+COPY watchdog.h watchdog.c ./
+COPY tests/ ./tests/
+COPY Makefile ./
 
-RUN make clean && make
+RUN make
 
-CMD ["python3", "tests/run_tests.py"]
+CMD ["python3", "tests/test_runner.py"]
