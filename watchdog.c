@@ -346,22 +346,24 @@ void* w_calloc(size_t count, size_t size, const char* file, const int line,
 
 void w_free(void* ptr, const char* file, const int line, const char* func) {
   double start_time = w_get_time();
-
   pthread_mutex_lock(&w_mutex);
 
-  if (!ptr) {
-    pthread_mutex_unlock(&w_mutex);
-    return;
-  }
+  // if (!ptr) {
+  //   pthread_mutex_unlock(&w_mutex);
+  //   return;
+  // }
 
-  void* original_ptr = (BYTE*)ptr - CANARY_SIZE;
-
-  // Search from the end to prefer the most-recent allocation record for this
-  // address. This avoids false double-free errors when the allocator reuses
-  // the same addresses.
+  // SEARCH LOGIC:
+  // Instead of calculating original_ptr immediately, we look for a
+  // metadata entry where metadata->ptr + CANARY_SIZE == ptr.
   for (int i = (int)watchdog.size - 1; i >= 0; i--) {
-    if (watchdog.buffer[i]->ptr == original_ptr) {
+    void* user_exposed_ptr = (BYTE*)watchdog.buffer[i]->ptr + CANARY_SIZE;
+
+    if (user_exposed_ptr == ptr) {
       if (!watchdog.buffer[i]->freed) {
+        void* original_ptr = watchdog.buffer[i]->ptr;
+
+        // Canary Check
         for (int j = 0; j < CANARY_SIZE; j++) {
           if (((BYTE*)original_ptr)[j] != CANARY_VALUE ||
               ((BYTE*)original_ptr + watchdog.buffer[i]->size +
@@ -371,14 +373,13 @@ void w_free(void* ptr, const char* file, const int line, const char* func) {
           }
         }
 
-        free(watchdog.buffer[i]->ptr);
+        free(original_ptr);
         watchdog.buffer[i]->freed = true;
 
         if (verbose_log) {
-          WATCHDOG_LOG("FREE",
-                       (void*)((BYTE*)watchdog.buffer[i]->ptr + CANARY_SIZE),
-                       watchdog.buffer[i]->size, file, line, func);
+          WATCHDOG_LOG("FREE", ptr, watchdog.buffer[i]->size, file, line, func);
         }
+
         w_stats.current_usage -= watchdog.buffer[i]->size;
         w_stats.total_frees++;
         w_stats.total_time_spent += (w_get_time() - start_time);
@@ -392,11 +393,12 @@ void w_free(void* ptr, const char* file, const int line, const char* func) {
       }
     }
   }
+
+  // If we reach here, the pointer was never in our database.
   WATCHDOG_LOG_ERROR("Attempt to free unallocated/untracked memory.", file,
                      line, func);
   w_stats.total_time_spent += (w_get_time() - start_time);
   pthread_mutex_unlock(&w_mutex);
-  return;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
