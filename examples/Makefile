@@ -1,5 +1,5 @@
 CC := clang
-CFLAGS := -std=c2x -O2
+CFLAGS := -std=c2x
 LDFLAGS := -lc -pthread
 
 .PHONY: default
@@ -14,8 +14,8 @@ main: main.o watchdog.o
 main.o: main.c
 	@$(CC) $(CFLAGS) -c main.c -o main.o
 
-watchdog.o: ../src/watchdog.c
-	@$(CC) $(CFLAGS) -c ../src/watchdog.c -o watchdog.o
+watchdog.o: ../watchdog.c
+	@$(CC) $(CFLAGS) -c ../watchdog.c -o watchdog.o
 
 
 .PHONY: run

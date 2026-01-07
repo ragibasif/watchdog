@@ -353,12 +353,13 @@ void w_free(void* ptr, const char* file, const int line, const char* func) {
     pthread_mutex_unlock(&w_mutex);
     return;
   }
+
   void* original_ptr = (BYTE*)ptr - CANARY_SIZE;
 
   // Search from the end to prefer the most-recent allocation record for this
   // address. This avoids false double-free errors when the allocator reuses
   // the same addresses.
-  for (size_t i = watchdog.size; i-- > 0;) {
+  for (int i = (int)watchdog.size - 1; i >= 0; i--) {
     if (watchdog.buffer[i]->ptr == original_ptr) {
       if (!watchdog.buffer[i]->freed) {
         for (int j = 0; j < CANARY_SIZE; j++) {
@@ -492,7 +493,7 @@ static void w_report(void) {
     }
   }
 
-  fprintf(w_log_file, "\nWatchdog Report:\n");
+  fprintf(w_log_file, "\n---Watchdog Report---\n");
   fprintf(w_log_file, "Total Allocations:  %zu\n", w_stats.total_allocations);
   fprintf(w_log_file, "Total Frees:        %zu\n", w_stats.total_frees);
   fprintf(w_log_file, "Peak Memory Usage:  %zu Bytes (%.2f MB)\n",
@@ -503,7 +504,7 @@ static void w_report(void) {
           (w_stats.total_allocations > 0)
               ? (w_stats.total_time_spent / w_stats.total_allocations) * 1000
               : 0);
-  fprintf(w_log_file, "\n\n");
+  fprintf(w_log_file, "\n");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
