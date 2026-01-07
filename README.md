@@ -66,9 +66,9 @@ watchdog/
 ├── Makefile            # Build system
 ├── Dockerfile          # Standardized test environment
 ├── tests/
-│   ├── integration_test.c   # Simulates memory bugs
-│   └── test_runner.py       # Automated validation script
-└── .github/workflows/       # GitHub Actions (CI)
+│   ├── test.c          # Simulates memory bugs
+│   └── test_runner.py  # Automated validation script
+└── .github/workflows/  # GitHub Actions (CI)
 ```
 
 ## Quick Start
