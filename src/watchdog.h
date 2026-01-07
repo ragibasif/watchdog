@@ -1,14 +1,3 @@
-/*
- * File: watchdog.h
- * Author: Ragib Asif
- * Email: ragibasif@tuta.io
- * GitHub: https://github.com/ragibasif
- * LinkedIn: https://www.linkedin.com/in/ragibasif/
- * SPDX-License-Identifier: MIT
- * Copyright (c) 2025 Ragib Asif
- * Version 1.1.0
- */
-
 #ifndef WATCHDOG_H_
 #define WATCHDOG_H_
 
