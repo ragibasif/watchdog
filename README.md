@@ -45,17 +45,36 @@
   <img src="https://img.shields.io/badge/YouTube-0D1117?style=for-the-badge&logo=youtube&logoColor=C9D1D9" alt="YouTube" />
 </a>
 
-Watchdog wraps dynamic memory functions (`malloc`, `calloc`, `realloc`, `free`) and
-tracks all memory activity at runtime:
-
-- Memory Leak Detection
-- Buffer Overflows / Out-of-Bounds Access
-- Double Free Detection
-- Thread Safe
-- Verbose Logging with Optional File Output
-- Minimal Integration – Just One Header and One C File
+Watchdog is a lightweight, thread-safe memory allocation tracker for C projects. It detects **memory leaks**, **buffer overflows** (via canaries), and **invalid/double frees** with zero external dependencies.
 
 <a href="https://www.youtube.com/watch?v=juKcJpgxBVk" target="_blank" rel="noopener noreferrer">YouTube - Stop Memory Leaks In C With Watchdog</a>
+
+## Features
+
+- **Leak Detection**: Reports any memory not freed before program exit.
+- **Overflow Protection**: Uses a 64-byte canary buffer to detect out-of-bounds writes.
+- **Double Free Prevention**: Tracks allocation states to catch redundant `free()` calls.
+- **Thread Safe**: Uses POSIX mutexes to handle multi-threaded allocations.
+- **Automated Verification**: Includes a Dockerized test suite and CI/CD pipeline.
+
+## Project Structure
+
+```text
+watchdog/
+├── watchdog.c          # Core implementation (Dynamic Array logic)
+├── watchdog.h          # API Macros (Redefines malloc/free)
+├── Makefile            # Build system
+├── Dockerfile          # Standardized test environment
+├── tests/
+│   ├── integration_test.c   # Simulates memory bugs
+│   └── test_runner.py       # Automated validation script
+└── .github/workflows/       # GitHub Actions (CI)
+```
+
+## Quick Start
+
+Watchdog wraps dynamic memory functions (`malloc`, `calloc`, `realloc`, `free`) and
+tracks all memory activity at runtime.
 
 ```c
 #define WATCHDOG_ENABLE
@@ -117,6 +136,29 @@ Color output is turned off if `log_to_file` is enabled regardless of the
 `enable_color_output` variable value.
 
 If `enable_verbose_log` is set to false, only errors will be logged.
+
+### Building
+
+The included `Makefile` handles the compilation of the library and the test suite:
+
+```bash
+make
+```
+
+## Running Tests
+
+You can run the automated suite locally or via Docker:
+
+```bash
+python3 tests/test_runner.py
+```
+
+Docker (Clean Environment):
+
+```bash
+docker build -t watchdog-tester .
+docker run --rm watchdog-tester
+```
 
 ## Examples
 
