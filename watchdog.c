@@ -131,7 +131,6 @@ void w_init(bool enable_verbose_log, bool enable_file_log,
 }
 
 void w_finalize(void) {
-  pthread_mutex_unlock(&w_mutex);
   w_report();
   WDA_cleanup();
 
@@ -148,12 +147,6 @@ void* w_malloc(const size_t size, const char* file, const int line,
 
   pthread_mutex_lock(&w_mutex);
 
-  w_stats.total_allocations++;
-  w_stats.current_usage += size;
-  if (w_stats.current_usage > w_stats.peak_usage) {
-    w_stats.peak_usage = w_stats.current_usage;
-  }
-
   if (!w_alloc_max_size_check_internal(size, file, line, func)) {
     pthread_mutex_unlock(&w_mutex);
     return NULL;
@@ -161,6 +154,12 @@ void* w_malloc(const size_t size, const char* file, const int line,
   if (!size) {
     pthread_mutex_unlock(&w_mutex);
     return NULL;
+  }
+
+  w_stats.total_allocations++;
+  w_stats.current_usage += size;
+  if (w_stats.current_usage > w_stats.peak_usage) {
+    w_stats.peak_usage = w_stats.current_usage;
   }
 
   void* ptr = malloc(size + (2 * CANARY_SIZE));
@@ -186,23 +185,13 @@ void* w_realloc(void* old_ptr, size_t size, const char* file, const int line,
   double start_time = w_get_time();
   w_check_initialization_internal();
 
+  if (!old_ptr) {
+    return w_malloc(size, file, line, func);
+  }
+
   pthread_mutex_lock(&w_mutex);
 
-  w_stats.total_allocations++;
-  w_stats.current_usage += size;
-  if (w_stats.current_usage > w_stats.peak_usage) {
-    w_stats.peak_usage = w_stats.current_usage;
-  }
-
-  if (!old_ptr) {
-    w_stats.total_time_spent += (w_get_time() - start_time);
-    pthread_mutex_unlock(&w_mutex);
-    void* temp = w_malloc(size, file, line, func);
-    return temp;
-  }
-
-  size_t old_ptr_size;
-
+  size_t old_ptr_size = 0;
   void* original_ptr = (BYTE*)old_ptr - CANARY_SIZE;
   for (size_t i = 0; i < watchdog.size; i++) {
     if (watchdog.buffer[i]->ptr == original_ptr) {
@@ -232,8 +221,15 @@ void* w_realloc(void* old_ptr, size_t size, const char* file, const int line,
     return NULL;
   }
 
+  w_stats.total_allocations++;
+  w_stats.current_usage += size;
+  if (w_stats.current_usage > w_stats.peak_usage) {
+    w_stats.peak_usage = w_stats.current_usage;
+  }
+
   void* new_ptr = malloc(size + (2 * CANARY_SIZE));
   w_alloc_check_internal(new_ptr, size, __FILE__, __LINE__, __func__);
+
   memset(new_ptr, CANARY_VALUE, size + (2 * CANARY_SIZE));
   size_t move_size;
   if (old_ptr_size > size || !old_ptr_size) {
@@ -242,13 +238,8 @@ void* w_realloc(void* old_ptr, size_t size, const char* file, const int line,
     move_size = old_ptr_size;
   }
   memcpy((BYTE*)new_ptr + CANARY_SIZE, old_ptr, move_size);
+
   WAM_realloc_update_internal(old_ptr, new_ptr, size, file, line, func);
-  if (!new_ptr) {
-    w_stats.total_time_spent += (w_get_time() - start_time);
-    pthread_mutex_unlock(&w_mutex);
-    return NULL;
-  }
-  old_ptr = NULL;
 
   if (verbose_log) {
     WATCHDOG_LOG("REALLOC", (void*)((BYTE*)new_ptr + CANARY_SIZE), size, file,
@@ -267,13 +258,7 @@ void* w_calloc(size_t count, size_t size, const char* file, const int line,
 
   pthread_mutex_lock(&w_mutex);
 
-  w_stats.total_allocations++;
-  w_stats.current_usage += size;
-  if (w_stats.current_usage > w_stats.peak_usage) {
-    w_stats.peak_usage = w_stats.current_usage;
-  }
-
-  if (!count) {
+  if (!count || !size) {
     w_stats.total_time_spent += (w_get_time() - start_time);
     pthread_mutex_unlock(&w_mutex);
     return NULL;
@@ -285,17 +270,17 @@ void* w_calloc(size_t count, size_t size, const char* file, const int line,
     return NULL;
   }
 
-  if (!size) {
-    w_stats.total_time_spent += (w_get_time() - start_time);
-    pthread_mutex_unlock(&w_mutex);
-    return NULL;
-  }
-
   if (count * size > (SIZE_MAX - 2 * CANARY_SIZE)) {
     WATCHDOG_LOG_ERROR("Calloc parameter overflow.", file, line, func);
     w_stats.total_time_spent += (w_get_time() - start_time);
     pthread_mutex_unlock(&w_mutex);
     return NULL;
+  }
+
+  w_stats.total_allocations++;
+  w_stats.current_usage += count * size;
+  if (w_stats.current_usage > w_stats.peak_usage) {
+    w_stats.peak_usage = w_stats.current_usage;
   }
 
   void* ptr = malloc(count * size + (2 * CANARY_SIZE));
@@ -382,7 +367,6 @@ static bool w_alloc_max_size_check_internal(const size_t size, const char* file,
                                             const int line, const char* func) {
   if (size > SIZE_MAX - 2 * CANARY_SIZE) {
     WATCHDOG_LOG_ERROR("Out of memory error.", file, line, func);
-    pthread_mutex_unlock(&w_mutex);
     return false;
   }
   return true;
@@ -415,15 +399,26 @@ static void WAM_realloc_update_internal(void* old_ptr, void* new_ptr,
                                         const int line, const char* func) {
   void* original_ptr = (BYTE*)old_ptr - CANARY_SIZE;
   for (size_t i = 0; i < watchdog.size; i++) {
-    if (watchdog.buffer[i]->ptr == original_ptr) {
-      if (!watchdog.buffer[i]->freed) {
-        pthread_mutex_unlock(&w_mutex);
-        w_free(old_ptr, watchdog.buffer[i]->file, watchdog.buffer[i]->line,
-               watchdog.buffer[i]->func);
-        WAM_alloc_create_internal(new_ptr, new_size, file, line, func);
-
-        return;
+    if (watchdog.buffer[i]->ptr == original_ptr && !watchdog.buffer[i]->freed) {
+      // Canary check on the old allocation before freeing it.
+      for (int j = 0; j < CANARY_SIZE; j++) {
+        if (((BYTE*)original_ptr)[j] != CANARY_VALUE ||
+            ((BYTE*)original_ptr + watchdog.buffer[i]->size +
+             CANARY_SIZE)[j] != CANARY_VALUE) {
+          WATCHDOG_LOG_ERROR("Out of bounds access.", file, line, func);
+          break;
+        }
       }
+      if (verbose_log) {
+        WATCHDOG_LOG("FREE", old_ptr, watchdog.buffer[i]->size,
+                     watchdog.buffer[i]->file, watchdog.buffer[i]->line,
+                     watchdog.buffer[i]->func);
+      }
+      free(original_ptr);
+      watchdog.buffer[i]->freed = true;
+      w_stats.current_usage -= watchdog.buffer[i]->size;
+      w_stats.total_frees++;
+      break;
     }
   }
 
@@ -432,11 +427,11 @@ static void WAM_realloc_update_internal(void* old_ptr, void* new_ptr,
 
 static void w_check_initialization_internal(void) {
   pthread_mutex_lock(&w_mutex);
-  if (!w_log_file) {
-    pthread_mutex_unlock(&w_mutex);
+  bool needs_init = !w_log_file;
+  pthread_mutex_unlock(&w_mutex);
+  if (needs_init) {
     w_init(true, false, false);
   }
-  pthread_mutex_unlock(&w_mutex);
 }
 
 static void w_report(void) {
@@ -502,7 +497,7 @@ static void WDA_pop(void) {
 
 static void WDA_cleanup(void) {
   if (watchdog.buffer) {
-    for (size_t i = 0; i < watchdog.size; i++) {
+    while (watchdog.size > 0) {
       WDA_pop();
     }
     free(watchdog.buffer);
