@@ -41,13 +41,9 @@
 <a href="https://github.com/ragibasif" target="_blank" rel="noopener noreferrer">
   <img src="https://img.shields.io/badge/GitHub-0D1117?style=for-the-badge&logo=github&logoColor=C9D1D9" alt="GitHub" />
 </a>
-<a href="https://www.youtube.com/@ragib_asif" target="_blank" rel="noopener noreferrer">
-  <img src="https://img.shields.io/badge/YouTube-0D1117?style=for-the-badge&logo=youtube&logoColor=C9D1D9" alt="YouTube" />
-</a>
 
 Watchdog is a lightweight, thread-safe memory allocation tracker for C projects. It detects **memory leaks**, **buffer overflows** (via canaries), and **invalid/double frees** with zero external dependencies.
 
-<a href="https://www.youtube.com/watch?v=juKcJpgxBVk" target="_blank" rel="noopener noreferrer">YouTube - Stop Memory Leaks In C With Watchdog</a>
 
 ## Features
 
