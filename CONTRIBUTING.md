@@ -158,7 +158,6 @@ Write clear, descriptive commit messages:
 
 - Open an issue for questions or discussion
 - Check existing issues for similar questions
-- Contact the maintainer at <ragibasif@tuta.io>
 
 ## License
 
