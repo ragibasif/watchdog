@@ -47,6 +47,7 @@ Watchdog is a lightweight, thread-safe memory allocation tracker for C projects.
 - **Leak Detection**: Reports any memory not freed before program exit.
 - **Overflow Protection**: Uses a 64-byte canary buffer to detect out-of-bounds writes.
 - **Double Free Prevention**: Tracks allocation states to catch redundant `free()` calls.
+- **Invalid Realloc Detection**: Rejects untracked or stale `realloc()` pointers instead of copying unknown memory.
 - **Thread Safe**: Uses POSIX mutexes to handle multi-threaded allocations.
 - **Automated Verification**: Includes a Dockerized test suite and CI/CD pipeline.
 
@@ -58,6 +59,7 @@ watchdog/
 ├── watchdog.h          # API Macros (Redefines malloc/free)
 ├── Makefile            # Build system
 ├── Dockerfile          # Standardized test environment
+├── docs/               # Interview prep and resume collateral
 ├── tests/
 │   ├── test.c          # Simulates memory bugs
 │   └── test_runner.py  # Automated validation script
@@ -138,6 +140,12 @@ The included `Makefile` handles the compilation of the library and the test suit
 make
 ```
 
+## Documentation
+
+- [Project docs index](./docs/README.md)
+- [Interview questions and STAR answers](./docs/INTERVIEW_QUESTIONS_STAR.md)
+- [Resume bullets in X-Y-Z format](./docs/RESUME_BULLETS_XYZ.md)
+
 ## Running Tests
 
 You can run the automated suite locally or via Docker:
@@ -196,6 +204,10 @@ void realloc_example(void) {
 
 ![./assets/realloc.gif](./assets/realloc.gif)
 
+Note: Watchdog's `realloc` wrapper preserves the original allocation when a
+nonzero resize fails and reports untracked pointers instead of treating them as
+valid metadata entries.
+
 ### Calloc
 
 ```c
@@ -222,13 +234,13 @@ void free_example(void) {
     size_t         count   = 5;
     short int     *buffer0 = malloc(sizeof *buffer0 * count);
     unsigned char *buffer1 = calloc(count, sizeof *buffer1);
-    long double   *buffer2 = realloc(buffer2, sizeof *buffer2 * count);
+    long double   *buffer2 = realloc(NULL, sizeof *buffer2 * count);
     free(buffer1);
     buffer1 = NULL;
     free(buffer2);
     buffer2 = NULL;
     free(buffer0);
-    buffer1 = NULL;
+    buffer0 = NULL;
 }
 ```
 
@@ -274,7 +286,8 @@ void double_free_example(void) {
 
 ```c
 void invalid_free_example(void) {
-    float *buffer;
+    float value  = 1.0f;
+    float *buffer = &value;
     free(buffer); // will trigger an error since buffer wasn't allocated
 }
 ```
@@ -284,6 +297,10 @@ void invalid_free_example(void) {
 ## Contributing
 
 Interested in contributing? Please see our [Contributing Guide](CONTRIBUTING.md) for guidelines on how to help improve Watchdog.
+
+If you are using this project in a portfolio, interview packet, or resume,
+the materials in [`docs/`](./docs/README.md) provide project-specific talking
+points and condensed impact statements.
 
 ## License
 
