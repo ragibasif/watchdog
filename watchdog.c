@@ -7,6 +7,8 @@ static FILE* w_log_file = NULL;
 static bool verbose_log = true;
 static bool log_to_file = false;
 static bool color_output = false;
+static bool w_initialized = false;
+static bool w_atexit_registered = false;
 
 typedef unsigned char BYTE;
 
@@ -84,11 +86,11 @@ struct WatchdogDynamicArray {
   size_t capacity;
 };
 
-static void WDA_init(void);
 static void WDA_push(void* ptr);
 static void WDA_pop(void);
 static void WDA_cleanup(void);
 static void WDA_expand_capacity_internal(void);
+static void w_configure_log_destination_internal(bool enable_file_log);
 
 typedef struct {
   size_t total_allocations;
@@ -112,22 +114,23 @@ static WDA watchdog;
 void w_init(bool enable_verbose_log, bool enable_file_log,
             bool enable_color_output) {
   pthread_mutex_lock(&w_mutex);
-  verbose_log = enable_verbose_log;
-  log_to_file = enable_file_log;
-  color_output = enable_color_output;
-  if (log_to_file) {
-    w_log_file = fopen(log_file_name, "a");
-    if (!w_log_file) {
-      fprintf(stderr, "Failed to open log file: %s\n", log_file_name);
-      pthread_mutex_unlock(&w_mutex);
-      exit(EXIT_FAILURE);
-    }
-  } else {
-    w_log_file = stdout;  // default to standard output
+  if (!w_initialized) {
+    watchdog.size = 0;
+    watchdog.capacity = WDA_DEFAULT_BUFFER_SIZE;
+    watchdog.buffer = malloc(sizeof *watchdog.buffer * watchdog.capacity);
+    w_alloc_check_internal(watchdog.buffer,
+                           sizeof *watchdog.buffer * watchdog.capacity,
+                           __FILE__, __LINE__, __func__);
+    w_initialized = true;
   }
-  atexit(w_finalize);
+  verbose_log = enable_verbose_log;
+  color_output = enable_color_output;
+  w_configure_log_destination_internal(enable_file_log);
+  if (!w_atexit_registered) {
+    atexit(w_finalize);
+    w_atexit_registered = true;
+  }
   pthread_mutex_unlock(&w_mutex);
-  WDA_init();
 }
 
 void w_finalize(void) {
@@ -191,10 +194,25 @@ void* w_realloc(void* old_ptr, size_t size, const char* file, const int line,
 
   pthread_mutex_lock(&w_mutex);
 
+  if (!size) {
+    w_stats.total_time_spent += (w_get_time() - start_time);
+    pthread_mutex_unlock(&w_mutex);
+    w_free(old_ptr, file, line, func);
+    return NULL;
+  }
+
+  if (!w_alloc_max_size_check_internal(size, file, line, func)) {
+    w_stats.total_time_spent += (w_get_time() - start_time);
+    pthread_mutex_unlock(&w_mutex);
+    return NULL;
+  }
+
   size_t old_ptr_size = 0;
   void* original_ptr = (BYTE*)old_ptr - CANARY_SIZE;
-  for (size_t i = 0; i < watchdog.size; i++) {
+  bool found = false;
+  for (int i = (int)watchdog.size - 1; i >= 0; i--) {
     if (watchdog.buffer[i]->ptr == original_ptr) {
+      found = true;
       old_ptr_size = watchdog.buffer[i]->size;
       if (watchdog.buffer[i]->freed) {
         WATCHDOG_LOG_ERROR("Attempt to reallocate a freed pointer.", file, line,
@@ -208,16 +226,11 @@ void* w_realloc(void* old_ptr, size_t size, const char* file, const int line,
     }
   }
 
-  if (!w_alloc_max_size_check_internal(size, file, line, func)) {
+  if (!found) {
+    WATCHDOG_LOG_ERROR("Attempt to reallocate unallocated/untracked memory.",
+                       file, line, func);
     w_stats.total_time_spent += (w_get_time() - start_time);
     pthread_mutex_unlock(&w_mutex);
-    w_free(old_ptr, file, line, func);
-    return NULL;
-  }
-  if (!size) {
-    w_stats.total_time_spent += (w_get_time() - start_time);
-    pthread_mutex_unlock(&w_mutex);
-    w_free(old_ptr, file, line, func);
     return NULL;
   }
 
@@ -264,14 +277,14 @@ void* w_calloc(size_t count, size_t size, const char* file, const int line,
     return NULL;
   }
 
-  if (!w_alloc_max_size_check_internal(size, file, line, func)) {
+  if (count > (SIZE_MAX - 2 * CANARY_SIZE) / size) {
+    WATCHDOG_LOG_ERROR("Calloc parameter overflow.", file, line, func);
     w_stats.total_time_spent += (w_get_time() - start_time);
     pthread_mutex_unlock(&w_mutex);
     return NULL;
   }
 
-  if (count * size > (SIZE_MAX - 2 * CANARY_SIZE)) {
-    WATCHDOG_LOG_ERROR("Calloc parameter overflow.", file, line, func);
+  if (!w_alloc_max_size_check_internal(count * size, file, line, func)) {
     w_stats.total_time_spent += (w_get_time() - start_time);
     pthread_mutex_unlock(&w_mutex);
     return NULL;
@@ -303,6 +316,7 @@ void* w_calloc(size_t count, size_t size, const char* file, const int line,
 
 void w_free(void* ptr, const char* file, const int line, const char* func) {
   double start_time = w_get_time();
+  w_check_initialization_internal();
   pthread_mutex_lock(&w_mutex);
 
   for (int i = (int)watchdog.size - 1; i >= 0; i--) {
@@ -427,7 +441,7 @@ static void WAM_realloc_update_internal(void* old_ptr, void* new_ptr,
 
 static void w_check_initialization_internal(void) {
   pthread_mutex_lock(&w_mutex);
-  bool needs_init = !w_log_file;
+  bool needs_init = !w_initialized;
   pthread_mutex_unlock(&w_mutex);
   if (needs_init) {
     w_init(true, false, false);
@@ -460,17 +474,6 @@ static void w_report(void) {
               ? (w_stats.total_time_spent / w_stats.total_allocations) * 1000
               : 0);
   fprintf(w_log_file, "\n");
-}
-
-static void WDA_init(void) {
-  pthread_mutex_lock(&w_mutex);
-  watchdog.size = 0;
-  watchdog.capacity = WDA_DEFAULT_BUFFER_SIZE;
-  watchdog.buffer = malloc(sizeof *watchdog.buffer * watchdog.capacity);
-  w_alloc_check_internal(watchdog.buffer,
-                         sizeof *watchdog.buffer * watchdog.capacity, __FILE__,
-                         __LINE__, __func__);
-  pthread_mutex_unlock(&w_mutex);
 }
 
 static void WDA_push(void* ptr) {
@@ -511,7 +514,26 @@ static void WDA_expand_capacity_internal(void) {
   watchdog.capacity *= WDA_GROWTH_FACTOR;
   WAM** buffer =
       realloc(watchdog.buffer, sizeof *watchdog.buffer * watchdog.capacity);
-  w_alloc_check_internal(buffer, sizeof **watchdog.buffer * watchdog.capacity,
+  w_alloc_check_internal(buffer, sizeof *watchdog.buffer * watchdog.capacity,
                          __FILE__, __LINE__, __func__);
   watchdog.buffer = buffer;
+}
+
+static void w_configure_log_destination_internal(bool enable_file_log) {
+  if (w_log_file && w_log_file != stdout) {
+    fclose(w_log_file);
+    w_log_file = NULL;
+  }
+
+  log_to_file = enable_file_log;
+  if (log_to_file) {
+    w_log_file = fopen(log_file_name, "a");
+    if (!w_log_file) {
+      fprintf(stderr, "Failed to open log file: %s\n", log_file_name);
+      pthread_mutex_unlock(&w_mutex);
+      exit(EXIT_FAILURE);
+    }
+  } else {
+    w_log_file = stdout;
+  }
 }
